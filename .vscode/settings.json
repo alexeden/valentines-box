@@ -1,0 +1,6 @@
+{
+  "terminal.integrated.env.osx": {
+    "PATH": "/Users/alexeden/.platformio/penv/bin:/Users/alexeden/.platformio/penv:/Users/alexeden/.cargo/bin:/Users/alexeden/.cargo/bin:/Users/alexeden/.nvm/versions/node/v11.7.0/bin:/Users/alexeden/Library/Python/2.7/bin:/packages/glslang-osx/bin:/bin:/Applications/Postgres.app/Contents/Versions/latest/bin:/Users/alexeden/code/emscripten:/Users/alexeden/code/emscripten/clang/e1.37.27_64bit:/Users/alexeden/code/emscripten/node/4.1.1_64bit/bin:/Users/alexeden/code/emscripten/emscripten/1.37.27:/Users/alexeden/.cargo/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:/opt/X11/bin:~/.dotnet/tools:/Applications/Wireshark.app/Contents/MacOS:/Applications/Postgres.app/Contents/Versions/latest/bin",
+    "PLATFORMIO_CALLER": "vscode"
+  }
+}
