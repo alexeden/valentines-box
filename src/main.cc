@@ -4,8 +4,14 @@
 #include "Actuator.cc"
 #include "Ping.cc"
 
-Actuator actuator = Actuator(ACT_POT_NEG_PIN, ACT_POT_WIPER_PIN, ACT_POT_POS_PIN, MOTOR_NUM);
-Ping ping = Ping(PING_PIN);
+Actuator actuator(
+	ACT_POT_NEG_PIN,
+	ACT_POT_WIPER_PIN,
+	ACT_POT_POS_PIN,
+	MOTOR_NUM
+);
+
+Ping ping(PING_PIN);
 
 void setup() {
 	Serial.begin(115200);
@@ -13,8 +19,8 @@ void setup() {
 }
 
 void loop() {
-	actuator.open(50);
+	actuator.open();
 	delay(2000);
-	actuator.close(50);
+	actuator.close();
 	delay(2000);
 }

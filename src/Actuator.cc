@@ -83,8 +83,7 @@ public:
 			if (!is_opening()) {
 				set_motion_state(OPENING);
 			}
-			// delay(t);
-			yield();
+			delay(t);
 		}
 		set_motion_state(IDLE);
 		Serial << "DONE OPENING!!!!!" << endl;
