@@ -2,6 +2,7 @@
 #define __Actuator__
 
 #include <Wire.h>
+#include <Streaming.h>
 #include <Adafruit_MotorShield.h>
 
 enum OpenState {
