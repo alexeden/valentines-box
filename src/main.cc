@@ -9,12 +9,6 @@ static const uint8_t POT_POS 	= A4; // yellow
 static const uint8_t MOTOR		= 4;
 
 
-enum OpenState {
-	OPEN,
-	MID,
-	CLOSED
-};
-
 Actuator actuator = Actuator(ACT_POT_NEG_PIN, ACT_POT_WIPER_PIN, ACT_POT_POS_PIN, MOTOR_NUM);
 
 // Create the motor shield object with the default I2C address
@@ -23,8 +17,7 @@ Actuator actuator = Actuator(ACT_POT_NEG_PIN, ACT_POT_WIPER_PIN, ACT_POT_POS_PIN
 // Select which 'port' M1, M2, M3 or M4. In this case, M1
 // Adafruit_DCMotor *motor = AFMS.getMotor(MOTOR_NUM);
 
-float get_open_ratio(uint8_t neg_pin, uint8_t wiper_pin, uint8_t pos_pin);
-OpenState get_open_state(uint8_t neg_pin, uint8_t wiper_pin, uint8_t pos_pin);
+// float get_open_ratio(uint8_t neg_pin, uint8_t wiper_pin, uint8_t pos_pin);
 
 
 void setup() {
@@ -39,12 +32,18 @@ void setup() {
 }
 
 void loop() {
-	float ratio = get_open_ratio(POT_NEG, POT_WIPER, POT_POS);
+	// float ratio = actuator.get_open_ratio();
 
-	Serial.print("ratio: ");
-	Serial.println(ratio);
+	// Serial.print("ratio: ");
+	// Serial.println(ratio);
 
+	actuator.open();
 
+	delay(999999);
+
+	actuator.close();
+
+	delay(999999);
 	// Serial.print("tick");
 
 	// motor->run(FORWARD);
@@ -56,7 +55,6 @@ void loop() {
 	// 	motor->setSpeed(i);
 	// 	delay(10);
 	// }
-	delay(500);
 	// Serial.print("tock");
 
 	// motor->run(BACKWARD);
@@ -74,34 +72,14 @@ void loop() {
 	// delay(3000);
 }
 
-float get_open_ratio(
-	uint8_t neg_pin,
-	uint8_t wiper_pin,
-	uint8_t pos_pin
-) {
-	uint16_t neg_rail = analogRead(neg_pin);
-	uint16_t wiper = analogRead(wiper_pin);
-	uint16_t pos_rail = analogRead(pos_pin);
+// float get_open_ratio(
+// 	uint8_t neg_pin,
+// 	uint8_t wiper_pin,
+// 	uint8_t pos_pin
+// ) {
+// 	uint16_t neg_rail = analogRead(neg_pin);
+// 	uint16_t wiper = analogRead(wiper_pin);
+// 	uint16_t pos_rail = analogRead(pos_pin);
 
-	return ((float)wiper - (float)neg_rail) / ((float)pos_rail - (float)neg_rail);
-}
-
-OpenState get_open_state(
-	uint8_t neg_pin,
-	uint8_t wiper_pin,
-	uint8_t pos_pin
-) {
-	uint16_t neg_rail = analogRead(neg_pin);
-	uint16_t wiper = analogRead(wiper_pin);
-	uint16_t pos_rail = analogRead(pos_pin);
-
-	if (wiper <= neg_rail) {
-		return CLOSED;
-	}
-	else if (wiper >= pos_rail) {
-		return OPEN;
-	}
-	else {
-		return MID;
-	}
-}
+// 	return ((float)wiper - (float)neg_rail) / ((float)pos_rail - (float)neg_rail);
+// }
