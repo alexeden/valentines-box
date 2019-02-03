@@ -204,6 +204,7 @@
                 "ACT_POT_NEG_PIN=34",
                 "ACT_POT_WIPER_PIN=39",
                 "ACT_POT_POS_PIN=36",
+                "PING_PIN=21",
                 "MOTOR_NUM=4",
                 "ESP32",
                 "ESP_PLATFORM",

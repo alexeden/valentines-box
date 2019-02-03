@@ -83,7 +83,8 @@ public:
 			if (!is_opening()) {
 				set_motion_state(OPENING);
 			}
-			delay(t);
+			// delay(t);
+			yield();
 		}
 		set_motion_state(IDLE);
 		Serial << "DONE OPENING!!!!!" << endl;
@@ -112,7 +113,7 @@ public:
 		uint16_t wiper = analogRead(wiper_pin);
 		uint16_t pos_rail = analogRead(pos_pin);
 
-		Serial << "get_open_state values: " << neg_rail << "\t" << wiper << "\t" << pos_rail << endl;
+		// Serial << "get_open_state values: " << neg_rail << "\t" << wiper << "\t" << pos_rail << endl;
 
 		if (wiper <= neg_rail) {
 			return CLOSED;
