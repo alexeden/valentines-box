@@ -1,4 +1,6 @@
+#include <Adafruit_GFX.h>
 #include <Adafruit_MotorShield.h>
+#include <Adafruit_SSD1306.h>
 #include <Streaming.h>
 #include <Wire.h>
 #include "Actuator.cc"
@@ -11,11 +13,14 @@ Actuator actuator(
 	MOTOR_NUM
 );
 
-Ping ping(PING_PIN);
+Adafruit_SSD1306 display(128, 32, &Wire);
 
 void setup() {
 	Serial.begin(115200);
 	actuator.begin();
+	display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+	display.clearDisplay();
+	display.display();
 }
 
 void loop() {

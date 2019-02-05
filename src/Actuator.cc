@@ -77,8 +77,6 @@ public:
 	}
 
 	void open(uint16_t t = 10) {
-		Serial << "OPENING!!!!!" << endl;
-
 		while (!is_open()) {
 			if (!is_opening()) {
 				set_motion_state(OPENING);
@@ -86,7 +84,6 @@ public:
 			delay(t);
 		}
 		set_motion_state(IDLE);
-		Serial << "DONE OPENING!!!!!" << endl;
 	}
 
 	void close(uint16_t t = 10) {
