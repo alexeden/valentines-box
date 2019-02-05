@@ -1,10 +1,11 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_MotorShield.h>
+#include <Adafruit_NeoPixel.h>
 #include <Adafruit_SSD1306.h>
 #include <Streaming.h>
 #include <Wire.h>
 #include "Actuator.cc"
-#include "Ping.cc"
+#include "Neopixels.cc"
 
 Actuator actuator(
 	ACT_POT_NEG_PIN,
@@ -14,6 +15,7 @@ Actuator actuator(
 );
 
 Adafruit_SSD1306 display(128, 32, &Wire);
+Neopixels pixels(NEOPIXEL_PIN);
 
 void setup() {
 	Serial.begin(115200);
