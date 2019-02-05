@@ -8,11 +8,11 @@
 class Pixels {
 
 private:
-	const float DEGRADE = 0.97;
+	const float DEGRADE = 0.9;
     const uint8_t PIN, N;
 	Adafruit_NeoPixel *strip;
-	int8_t x;
-	int8_t v;
+	float x;
+	float v;
 	uint32_t *pixels;
 	uint32_t disp_mark;
 
@@ -46,7 +46,7 @@ public:
 		N(_n),
 		strip(new Adafruit_NeoPixel(_n, _pin, NEO_GRB + NEO_KHZ800)),
 		x(0.0),
-		v(0.1)
+		v(0.33)
 	{}
 
 	void begin() {
@@ -89,22 +89,13 @@ public:
 		reverse();
 	}
 
-	int get_x() {
+	int8_t get_x() {
 		return (int)x;
 	}
 
 	void display() {
 		uint32_t bgr = 0x00FF0055;
-		// if (pull > 0) {
-		// 	bgr = 0x00FF0000;
-		// }
-		// else if (pull < 0) {
-		// 	bgr = 0x000000FF;
-		// }
-		// else {
-		// 	bgr = 0x00FF00FF;
-		// }
-		pixels[int(x)] = bgr;
+		pixels[(int)x] = bgr;
 		for (int i = 0; i < N; i++) {
 			if (i == int(x)) {
 				strip -> setPixelColor(i, pixels[i]);
