@@ -4,7 +4,6 @@
 #include <Wire.h>
 #include <Streaming.h>
 
-
 class Ping {
 private:
 	const uint8_t pin;
@@ -19,6 +18,7 @@ private:
 		pinMode(pin, INPUT);
 		return pulseIn(pin, HIGH);
 	}
+
 public:
 	Ping (uint8_t _pin) : pin(_pin) {}
 

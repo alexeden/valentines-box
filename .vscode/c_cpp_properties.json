@@ -213,8 +213,6 @@
                 "BUTTON_A=15",
                 "BUTTON_B=32",
                 "BUTTON_C=14",
-                "CAP_SEND_PIN=16",
-                "CAP_RECV_PIN=17",
                 "NEOPIXEL_PIN=21",
                 "MOTOR_NUM=4",
                 "PING_PIN=21",

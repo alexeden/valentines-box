@@ -4,9 +4,7 @@
 #include <Adafruit_SSD1306.h>
 #include <Streaming.h>
 #include <Wire.h>
-// #include <driver/touch_pad.h>
 #include "Actuator.cc"
-#include "CapacitiveSensor.h"
 #include "Ping.cc"
 #include "Pixels.cc"
 
@@ -18,10 +16,7 @@ Actuator actuator(
 );
 
 Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
-
-CapacitiveSensor touch_sense = CapacitiveSensor(CAP_SEND_PIN, CAP_RECV_PIN);
-uint16_t touch_samples = 30;
-
+Ping *ping = new Ping(PING_PIN);
 // Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
 
 void setup() {
@@ -31,7 +26,6 @@ void setup() {
 	pinMode(BUTTON_C, INPUT_PULLUP);
 	actuator.begin();
 	// pixels -> begin();
-	touch_sense.reset_CS_AutoCal();
 	display -> begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display -> clearDisplay();
 	display -> setTextSize(2);      // Normal 1:1 pixel scale
@@ -39,23 +33,15 @@ void setup() {
 }
 
 void loop() {
-	if(!digitalRead(BUTTON_A)) {
-		touch_samples++;
-		delay(100);
-	}
-	else if (!digitalRead(BUTTON_C)) {
-		touch_samples -= touch_samples > 0 ? 1 : 0;
-		delay(100);
-	}
-
-	long touch_value = touch_sense.capacitiveSensor(touch_samples);
+	long prox = ping -> read_inches();
 	// pixels -> update();
 	// pixels -> display();
 	display -> clearDisplay();
 	display -> setCursor(0, 0);
-	display -> println(touch_samples);
-	display -> println(touch_value);
+	display -> println("Proximity");
+	display -> print(prox);
+	display -> println("\"");
 	// display -> println(pixels->get_x());
 	display -> display();
-	delay(10);
+	delay(100);
 }
