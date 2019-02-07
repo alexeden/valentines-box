@@ -4,8 +4,10 @@
 #include <Adafruit_SSD1306.h>
 #include <Streaming.h>
 #include <Wire.h>
+// #include <driver/touch_pad.h>
 #include "Actuator.cc"
 #include "CapacitiveSensor.h"
+#include "Ping.cc"
 #include "Pixels.cc"
 
 Actuator actuator(
@@ -19,6 +21,7 @@ Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
 
 CapacitiveSensor touch_sense = CapacitiveSensor(CAP_SEND_PIN, CAP_RECV_PIN);
 uint16_t touch_samples = 30;
+
 // Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
 
 void setup() {
@@ -28,6 +31,7 @@ void setup() {
 	pinMode(BUTTON_C, INPUT_PULLUP);
 	actuator.begin();
 	// pixels -> begin();
+	touch_sense.reset_CS_AutoCal();
 	display -> begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display -> clearDisplay();
 	display -> setTextSize(2);      // Normal 1:1 pixel scale
