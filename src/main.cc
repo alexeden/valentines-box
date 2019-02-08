@@ -16,16 +16,32 @@ Actuator actuator(
 );
 
 Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
-Ping *ping = new Ping(PING_PIN);
-// Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
+// Ping *ping = new Ping(PING_PIN);
+Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
+
+uint8_t open_threshold_inches = 12;
+volatile ulong loop_delay = 10;
+
+void increase_delay() {
+	loop_delay += loop_delay >= 100 ? 50 : 5;
+	// delay(5);
+}
+
+void decrease_delay() {
+	loop_delay -= loop_delay > 100 ? 50 : 5;
+	if (loop_delay <= 0) loop_delay = 0;
+	// delay(5);
+}
 
 void setup() {
 	Serial.begin(115200);
 	pinMode(BUTTON_A, INPUT_PULLUP);
+	attachInterrupt(BUTTON_A, increase_delay, FALLING);
 	pinMode(BUTTON_B, INPUT_PULLUP);
 	pinMode(BUTTON_C, INPUT_PULLUP);
+	attachInterrupt(BUTTON_C, decrease_delay, FALLING);
 	actuator.begin();
-	// pixels -> begin();
+	pixels -> begin();
 	display -> begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display -> clearDisplay();
 	display -> setTextSize(2);      // Normal 1:1 pixel scale
@@ -33,15 +49,24 @@ void setup() {
 }
 
 void loop() {
-	long prox = ping -> read_inches();
-	// pixels -> update();
-	// pixels -> display();
+	// if (actuator.is_closed() || actuator.is_closing()) {
+	// 	long prox = ping -> read_inches();
+	// 	display -> print(prox);
+
+	// 	if (prox > open_threshold_inches) {
+	// 		// Make a sound
+	// 		// Open
+	// 		// Reset close timer
+	// 	}
+	// }
+	pixels -> update();
+	pixels -> display();
 	display -> clearDisplay();
 	display -> setCursor(0, 0);
-	display -> println("Proximity");
-	display -> print(prox);
-	display -> println("\"");
-	// display -> println(pixels->get_x());
+	display -> print("Delay ");
+	display -> println(loop_delay);
+	display -> print("Pixel ");
+	display -> println(pixels->get_x());
 	display -> display();
-	delay(100);
+	delay(loop_delay);
 }
