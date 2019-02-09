@@ -19,11 +19,19 @@ private:
 		return pulseIn(pin, HIGH);
 	}
 
+	long _last_inches;
+
 public:
-	Ping (uint8_t _pin) : pin(_pin) {}
+	Ping (uint8_t _pin) : pin(_pin), _last_inches(0) {}
 
 	long read_inches() {
-		return read() / 74 / 2;
+		long inches = read() / 74 / 2;
+		_last_inches = inches;
+		return inches;
+	}
+
+	long last_inches() {
+		return _last_inches;
 	}
 };
 #endif
