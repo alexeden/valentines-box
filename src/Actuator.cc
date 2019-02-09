@@ -104,11 +104,17 @@ public:
 		update_pot();
 
 		if (pot.wiper <= pot.neg) {
-			if (motor_state != STOP) set_motor_state(STOP);
+			if (motor_state != STOP) {
+				Serial << "Forcing STOP because actuator is fully extended" << endl;
+				set_motor_state(STOP);
+			}
 			return EXTENDED;
 		}
 		else if (pot.wiper >= pot.pos) {
-			if (motor_state != STOP) set_motor_state(STOP);
+			if (motor_state != STOP) {
+				Serial << "Forcing STOP because actuator is fully retracted" << endl;
+				set_motor_state(STOP);
+			}
 			return RETRACTED;
 		}
 		else {
