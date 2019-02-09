@@ -48,18 +48,22 @@ void display_line(String str) {
 	display -> display();
 }
 
+bool box_is_open() 		{ return actuator.is_retracted(); 	}
+bool box_is_closed() 	{ return actuator.is_extended(); 	}
+void open_box() 	{ actuator.retract(); 	}
+void close_box() 	{ actuator.extend(); 	}
 
 void loop() {
 	display_line("Retracting...");
-	while (!actuator.is_retracted()) {
-		actuator.retract();
+	while (!box_is_open()) {
+		open_box();
 	}
 	display_line("done retracting!");
 	delay(1000);
 
 	display_line("Extending...");
-	while (!actuator.is_extended()) {
-		actuator.extend();
+	while (!box_is_closed()) {
+		close_box();
 	}
 	display_line("done extending!");
 	delay(1000);
