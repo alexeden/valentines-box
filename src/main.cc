@@ -16,23 +16,14 @@ Actuator actuator(
 );
 
 Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
-// Ping *ping = new Ping(PING_PIN);
+Ping *ping = new Ping(PING_PIN);
 // Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
 
-uint8_t open_threshold_inches = 12;
 volatile ulong loop_delay = 10;
-// void print_pot_pins();
 
-void isr_increase_delay() {
-	loop_delay += loop_delay >= 100 ? 50 : 5;
-	// delay(5);
-}
+void isr_increase_delay();
 
-void isr_decrease_delay() {
-	loop_delay -= loop_delay > 100 ? 50 : 5;
-	if (loop_delay <= 0) loop_delay = 0;
-	// delay(5);
-}
+void isr_decrease_delay();
 
 void setup() {
 	Serial.begin(115200);
@@ -41,20 +32,43 @@ void setup() {
 	pinMode(BUTTON_B, INPUT_PULLUP);
 	pinMode(BUTTON_C, INPUT_PULLUP);
 	attachInterrupt(BUTTON_C, isr_decrease_delay, FALLING);
+
 	actuator.begin();
 	// pixels -> begin();
 	display -> begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display -> clearDisplay();
-	display -> setTextSize(1);
+	display -> setTextSize(2);
 	display -> setTextColor(WHITE);
 }
 
+void display_line(String str) {
+	display -> clearDisplay();
+	display -> setCursor(0, 0);
+	display -> println(str);
+	display -> display();
+}
+
+
 void loop() {
+	display_line("Retracting...");
+	while (!actuator.is_retracted()) {
+		actuator.retract();
+	}
+	display_line("done retracting!");
+	delay(1000);
+
+	display_line("Extending...");
+	while (!actuator.is_extended()) {
+		actuator.extend();
+	}
+	display_line("done extending!");
+	delay(1000);
+
 	// if (actuator.is_closed() || actuator.is_closing()) {
 	// 	long prox = ping -> read_inches();
 	// 	display -> print(prox);
 
-	// 	if (prox > open_threshold_inches) {
+	// 	if (prox > PING_THRESHOLD_INCHES) {
 	// 		// Make a sound
 	// 		// Open
 	// 		// Reset close timer
@@ -72,6 +86,17 @@ void loop() {
 	// delay(loop_delay);
 	// print_pot_pins();
 	delay(5);
+}
+
+
+
+void isr_increase_delay() {
+	loop_delay += loop_delay >= 100 ? 50 : 5;
+}
+
+void isr_decrease_delay() {
+	loop_delay -= loop_delay > 100 ? 50 : 5;
+	if (loop_delay <= 0) loop_delay = 0;
 }
 
 

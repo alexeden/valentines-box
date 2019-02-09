@@ -21,6 +21,12 @@ enum MotorState {
 	// STOP = RELEASE
 };
 
+struct Pot {
+	uint16_t neg;
+	uint16_t wiper;
+	uint16_t pos;
+};
+
 class Actuator {
 private:
     const uint8_t neg_pin;
@@ -28,11 +34,7 @@ private:
     const uint8_t pos_pin;
     const uint8_t motor_num;
 
-	struct {
-		uint8_t neg;
-		uint8_t wiper;
-		uint8_t pos;
-	} pot;
+	Pot pot;
 
 	Adafruit_MotorShield motor_shield;
 	Adafruit_DCMotor *motor;
@@ -65,11 +67,11 @@ public:
 		motor = motor_shield.getMotor(motor_num);
 	}
 
-
 	void begin() {
 		motor_shield.begin();
 		motor->setSpeed(255);
 		set_motor_state(STOP);
+		update_pot();
 	}
 
 	// State of actuator motion
@@ -83,30 +85,30 @@ public:
 	bool is_extended() 	{ return read_state() == EXTENDED; 	}
 
 	void retract() {
-		while (!is_retracted()) {
-			if (!is_retracting()) {
-				set_motor_state(RETRACT);
-			}
+		if (!is_retracting()) {
+			set_motor_state(RETRACT);
 		}
-		set_motor_state(STOP);
 	}
 
 	void extend() {
-		while (!is_extended()) {
-			if (!is_extending()) {
-				set_motor_state(EXTEND);
-			}
+		if (!is_extending()) {
+			set_motor_state(EXTEND);
 		}
-		set_motor_state(STOP);
+	}
+
+	void print_pot() {
+		Serial << motor_state << '\t' << pot.wiper << '\t' << pot.neg << '\t' << pot.pos << endl;
 	}
 
 	ActuatorState read_state() {
 		update_pot();
 
 		if (pot.wiper <= pot.neg) {
+			if (motor_state != STOP) set_motor_state(STOP);
 			return EXTENDED;
 		}
 		else if (pot.wiper >= pot.pos) {
+			if (motor_state != STOP) set_motor_state(STOP);
 			return RETRACTED;
 		}
 		else {
