@@ -8,26 +8,27 @@
 #include "Ping.cc"
 #include "Pixels.cc"
 
-Actuator actuator(
-	ACT_POT_NEG_PIN,
-	ACT_POT_WIPER_PIN,
-	ACT_POT_POS_PIN,
-	MOTOR_NUM
-);
+// Actuator actuator(
+// 	ACT_POT_NEG_PIN,
+// 	ACT_POT_WIPER_PIN,
+// 	ACT_POT_POS_PIN,
+// 	MOTOR_NUM
+// );
 
 Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
 // Ping *ping = new Ping(PING_PIN);
-Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
+// Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
 
 uint8_t open_threshold_inches = 12;
 volatile ulong loop_delay = 10;
+// void print_pot_pins();
 
-void increase_delay() {
+void isr_increase_delay() {
 	loop_delay += loop_delay >= 100 ? 50 : 5;
 	// delay(5);
 }
 
-void decrease_delay() {
+void isr_decrease_delay() {
 	loop_delay -= loop_delay > 100 ? 50 : 5;
 	if (loop_delay <= 0) loop_delay = 0;
 	// delay(5);
@@ -36,16 +37,16 @@ void decrease_delay() {
 void setup() {
 	Serial.begin(115200);
 	pinMode(BUTTON_A, INPUT_PULLUP);
-	attachInterrupt(BUTTON_A, increase_delay, FALLING);
+	attachInterrupt(BUTTON_A, isr_increase_delay, FALLING);
 	pinMode(BUTTON_B, INPUT_PULLUP);
 	pinMode(BUTTON_C, INPUT_PULLUP);
-	attachInterrupt(BUTTON_C, decrease_delay, FALLING);
-	actuator.begin();
-	pixels -> begin();
+	attachInterrupt(BUTTON_C, isr_decrease_delay, FALLING);
+	// actuator.begin();
+	// pixels -> begin();
 	display -> begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display -> clearDisplay();
-	display -> setTextSize(2);      // Normal 1:1 pixel scale
-	display -> setTextColor(WHITE); // Draw white text
+	display -> setTextSize(1);
+	display -> setTextColor(WHITE);
 }
 
 void loop() {
@@ -59,14 +60,40 @@ void loop() {
 	// 		// Reset close timer
 	// 	}
 	// }
-	pixels -> update();
-	pixels -> display();
+	// pixels -> update();
+	// pixels -> display();
+	// display -> clearDisplay();
+	// display -> setCursor(0, 0);
+	// display -> print("Delay ");
+	// display -> println(loop_delay);
+	// display -> print("Pixel ");
+	// display -> println(pixels->get_x());
+	// display -> display();
+	// delay(loop_delay);
+	// print_pot_pins();
+	delay(5);
+}
+
+
+/*
+
+uint16_t min_wiper_value = 0xFFF;
+uint16_t max_wiper_value = 0x000;
+
+void print_pot_pins() {
+	auto wiper = analogRead(ACT_POT_WIPER_PIN);
+	min_wiper_value = min(wiper, min_wiper_value);
+	max_wiper_value = max(wiper, max_wiper_value);
+
 	display -> clearDisplay();
 	display -> setCursor(0, 0);
-	display -> print("Delay ");
-	display -> println(loop_delay);
-	display -> print("Pixel ");
-	display -> println(pixels->get_x());
+	display -> print(min_wiper_value);
+	display -> setCursor(64, 0);
+	display -> println(analogRead(ACT_POT_NEG_PIN));
+	display -> println(wiper);
+	display -> print(max_wiper_value);
+	display -> setCursor(64, display -> getCursorY());
+	display -> println(analogRead(ACT_POT_POS_PIN));
 	display -> display();
-	delay(loop_delay);
 }
+*/
