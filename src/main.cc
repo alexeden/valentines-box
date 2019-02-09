@@ -37,8 +37,13 @@ void setup() {
 	// pixels -> begin();
 	display -> begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display -> clearDisplay();
-	display -> setTextSize(2);
+	display -> setTextSize(1);
 	display -> setTextColor(WHITE);
+
+	while (!actuator.is_extended()) {
+		actuator.extend();
+	}
+
 }
 
 void display_line(String str) {
@@ -48,25 +53,73 @@ void display_line(String str) {
 	display -> display();
 }
 
-bool box_is_open() 		{ return actuator.is_retracted(); 	}
-bool box_is_closed() 	{ return actuator.is_extended(); 	}
-void open_box() 	{ actuator.retract(); 	}
-void close_box() 	{ actuator.extend(); 	}
+bool box_is_open() 	 { return actuator.is_retracted(); 	}
+bool box_is_closed() { return actuator.is_extended(); 	}
+
+void close_box() 	 { actuator.extend(); 	}
+
+unsigned long close_timer_mark = millis();
+
+void open_box() {
+	Serial << "Opening box" << endl;
+	while (!box_is_open()) {
+		actuator.retract();
+	}
+	Serial << "Box should be open, setting close timer mark" << endl;
+	close_timer_mark = millis();
+}
+
+// bool box_is_watch_mode() {
+// 	return actuator.is_retracted() || actuator.is_retracting();
+// }
 
 void loop() {
-	display_line("Retracting...");
-	while (!box_is_open()) {
+	// Trigger OPEN
+	if (
+		(actuator.is_extended() || actuator.is_extending())
+		&& (ping -> read_inches() <= PING_THRESHOLD_INCHES)
+	) {
+		Serial << "TRIGGERING OPEN" << endl;
+		if (box_is_closed()) {
+			Serial << "PLAYING SOUND" << endl;
+		}
+
 		open_box();
 	}
-	display_line("done retracting!");
-	delay(1000);
-
-	display_line("Extending...");
-	while (!box_is_closed()) {
-		close_box();
+	// Trigger CLOSE
+	else if (box_is_open() && (millis() - close_timer_mark >= CLOSE_TIMER_MS)) {
+		Serial << "TRIGGERING CLOSE" << endl;
+		actuator.extend();
 	}
-	display_line("done extending!");
-	delay(1000);
+
+	display -> clearDisplay();
+	display -> setCursor(0, 0);
+	display -> print("Extended? ");
+	display -> println(actuator.is_extended() ? "Yes" : "No");
+	display -> print("Extending? ");
+	display -> println(actuator.is_extending() ? "Yes" : "No");
+	display -> print("Retracted? ");
+	display -> println(actuator.is_retracted() ? "Yes" : "No");
+	display -> print("Retracting? ");
+	display -> println(actuator.is_retracting() ? "Yes" : "No");
+	display -> println(ping -> read_inches());
+	display -> display();
+
+	delay(5);
+	// display_line(String(ping -> read_inches()));
+	// display_line("Retracting...");
+	// while (!box_is_open()) {
+	// 	open_box();
+	// }
+	// display_line("done retracting!");
+	// delay(1000);
+
+	// display_line("Extending...");
+	// while (!box_is_closed()) {
+	// 	close_box();
+	// }
+	// display_line("done extending!");
+	// delay(1000);
 
 	// if (actuator.is_closed() || actuator.is_closing()) {
 	// 	long prox = ping -> read_inches();
@@ -80,19 +133,7 @@ void loop() {
 	// }
 	// pixels -> update();
 	// pixels -> display();
-	// display -> clearDisplay();
-	// display -> setCursor(0, 0);
-	// display -> print("Delay ");
-	// display -> println(loop_delay);
-	// display -> print("Pixel ");
-	// display -> println(pixels->get_x());
-	// display -> display();
-	// delay(loop_delay);
-	// print_pot_pins();
-	delay(5);
 }
-
-
 
 void isr_increase_delay() {
 	loop_delay += loop_delay >= 100 ? 50 : 5;
@@ -105,7 +146,6 @@ void isr_decrease_delay() {
 
 
 /*
-
 uint16_t min_wiper_value = 0xFFF;
 uint16_t max_wiper_value = 0x000;
 
