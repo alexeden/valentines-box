@@ -8,7 +8,7 @@
 #include "Ping.cc"
 #include "Pixels.cc"
 
-Actuator actuator(
+Actuator *actuator = new Actuator(
 	ACT_POT_NEG_PIN,
 	ACT_POT_WIPER_PIN,
 	ACT_POT_POS_PIN,
@@ -33,15 +33,15 @@ void setup() {
 	pinMode(BUTTON_C, INPUT_PULLUP);
 	attachInterrupt(BUTTON_C, isr_decrease_delay, FALLING);
 
-	actuator.begin();
+	actuator -> begin();
 	// pixels -> begin();
 	display -> begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display -> clearDisplay();
 	display -> setTextSize(1);
 	display -> setTextColor(WHITE);
 
-	while (!actuator.is_extended()) {
-		actuator.extend();
+	while (!actuator -> is_extended()) {
+		actuator -> extend();
 	}
 
 }
@@ -53,30 +53,30 @@ void display_line(String str) {
 	display -> display();
 }
 
-bool box_is_open() 	 { return actuator.is_retracted(); 	}
-bool box_is_closed() { return actuator.is_extended(); 	}
+bool box_is_open() 	 { return actuator -> is_retracted(); 	}
+bool box_is_closed() { return actuator -> is_extended(); 	}
 
-void close_box() 	 { actuator.extend(); 	}
+void close_box() 	 { actuator -> extend(); 	}
 
 unsigned long close_timer_mark = millis();
 
 void open_box() {
 	Serial << "Opening box" << endl;
 	while (!box_is_open()) {
-		actuator.retract();
+		actuator -> retract();
 	}
 	Serial << "Box should be open, setting close timer mark" << endl;
 	close_timer_mark = millis();
 }
 
 // bool box_is_watch_mode() {
-// 	return actuator.is_retracted() || actuator.is_retracting();
+// 	return actuator -> is_retracted() || actuator -> is_retracting();
 // }
 
 void loop() {
 	// Trigger OPEN
 	if (
-		(actuator.is_extended() || actuator.is_extending())
+		(actuator -> is_extended() || actuator -> is_extending())
 		&& (ping -> read_inches() <= PING_THRESHOLD_INCHES)
 	) {
 		Serial << "TRIGGERING OPEN" << endl;
@@ -89,19 +89,21 @@ void loop() {
 	// Trigger CLOSE
 	else if (box_is_open() && (millis() - close_timer_mark >= CLOSE_TIMER_MS)) {
 		Serial << "TRIGGERING CLOSE" << endl;
-		actuator.extend();
+		actuator -> extend();
 	}
 
 	display -> clearDisplay();
 	display -> setCursor(0, 0);
+	display -> print("Wiper");
+	display -> println(actuator -> get_wiper());
 	display -> print("Extended? ");
-	display -> println(actuator.is_extended() ? "Yes" : "No");
-	display -> print("Extending? ");
-	display -> println(actuator.is_extending() ? "Yes" : "No");
+	display -> println(actuator -> is_extended() ? "Yes" : "No");
+	// display -> print("Extending? ");
+	// display -> println(actuator -> is_extending() ? "Yes" : "No");
 	display -> print("Retracted? ");
-	display -> println(actuator.is_retracted() ? "Yes" : "No");
-	display -> print("Retracting? ");
-	display -> println(actuator.is_retracting() ? "Yes" : "No");
+	display -> println(actuator -> is_retracted() ? "Yes" : "No");
+	// display -> print("Retracting? ");
+	// display -> println(actuator -> is_retracting() ? "Yes" : "No");
 	display -> println(ping -> read_inches());
 	display -> display();
 
@@ -121,7 +123,7 @@ void loop() {
 	// display_line("done extending!");
 	// delay(1000);
 
-	// if (actuator.is_closed() || actuator.is_closing()) {
+	// if (actuator -> is_closed() || actuator -> is_closing()) {
 	// 	long prox = ping -> read_inches();
 	// 	display -> print(prox);
 

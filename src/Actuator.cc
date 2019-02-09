@@ -47,8 +47,15 @@ private:
 
 	void update_pot() {
 		pot.neg = analogRead(neg_pin);
-		pot.wiper = analogRead(wiper_pin);
 		pot.pos = analogRead(pos_pin);
+
+		float sum = 0;
+		uint8_t readings = 200;
+		for (uint8_t i; i < readings; i++) {
+			sum += (float)analogRead(wiper_pin);
+		}
+
+		pot.wiper = (uint16_t)(sum / readings);
 	}
 
 public:
@@ -98,6 +105,10 @@ public:
 
 	void print_pot() {
 		Serial << motor_state << '\t' << pot.wiper << '\t' << pot.neg << '\t' << pot.pos << endl;
+	}
+
+	uint16_t get_wiper() {
+		return pot.wiper;
 	}
 
 	ActuatorState read_state() {
