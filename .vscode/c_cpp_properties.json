@@ -214,6 +214,7 @@
                 "BUTTON_B=32",
                 "BUTTON_C=14",
                 "NEOPIXEL_PIN=4",
+                "CLOSE_TIMER_MS=4000",
                 "MOTOR_NUM=4",
                 "PING_THRESHOLD_INCHES=12",
                 "PING_PIN=21",
