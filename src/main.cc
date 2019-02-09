@@ -8,12 +8,12 @@
 #include "Ping.cc"
 #include "Pixels.cc"
 
-// Actuator actuator(
-// 	ACT_POT_NEG_PIN,
-// 	ACT_POT_WIPER_PIN,
-// 	ACT_POT_POS_PIN,
-// 	MOTOR_NUM
-// );
+Actuator actuator(
+	ACT_POT_NEG_PIN,
+	ACT_POT_WIPER_PIN,
+	ACT_POT_POS_PIN,
+	MOTOR_NUM
+);
 
 Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
 // Ping *ping = new Ping(PING_PIN);
@@ -41,7 +41,7 @@ void setup() {
 	pinMode(BUTTON_B, INPUT_PULLUP);
 	pinMode(BUTTON_C, INPUT_PULLUP);
 	attachInterrupt(BUTTON_C, isr_decrease_delay, FALLING);
-	// actuator.begin();
+	actuator.begin();
 	// pixels -> begin();
 	display -> begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display -> clearDisplay();

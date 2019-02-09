@@ -215,6 +215,7 @@
                 "BUTTON_C=14",
                 "NEOPIXEL_PIN=4",
                 "MOTOR_NUM=4",
+                "PING_THRESHOLD_INCHES=12",
                 "PING_PIN=21",
                 "ESP32",
                 "ESP_PLATFORM",

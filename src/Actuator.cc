@@ -5,16 +5,20 @@
 #include <Streaming.h>
 #include <Adafruit_MotorShield.h>
 
-enum OpenState {
-	OPEN,
-	MID,
-	CLOSED
+enum ActuatorState {
+	RETRACTED,
+	MIDDLE,
+	EXTENDED
 };
 
-enum MotionState {
-	OPENING = FORWARD,
-	CLOSING = BACKWARD,
-	IDLE = RELEASE
+enum MotorState {
+	EXTEND = FORWARD,
+	RETRACT = BACKWARD,
+	STOP = RELEASE
+
+	// OPENING = FORWARD,
+	// EXTEND = BACKWARD,
+	// STOP = RELEASE
 };
 
 class Actuator {
@@ -24,13 +28,25 @@ private:
     const uint8_t pos_pin;
     const uint8_t motor_num;
 
+	struct {
+		uint8_t neg;
+		uint8_t wiper;
+		uint8_t pos;
+	} pot;
+
 	Adafruit_MotorShield motor_shield;
 	Adafruit_DCMotor *motor;
-	MotionState motion_state;
+	MotorState motor_state;
 
-	void set_motion_state(MotionState ms) {
+	void set_motor_state(MotorState ms) {
 		motor->run(ms);
-		motion_state = ms;
+		motor_state = ms;
+	}
+
+	void update_pot() {
+		pot.neg = analogRead(neg_pin);
+		pot.wiper = analogRead(wiper_pin);
+		pot.pos = analogRead(pos_pin);
 	}
 
 public:
@@ -53,72 +69,48 @@ public:
 	void begin() {
 		motor_shield.begin();
 		motor->setSpeed(255);
-		set_motion_state(IDLE);
+		set_motor_state(STOP);
 	}
 
-	bool is_opening() {
-		return motion_state == OPENING;
-	}
+	// State of actuator motion
+	bool is_extending()		{ return motor_state == EXTEND;	 }
+	bool is_retracting() 	{ return motor_state == RETRACT; }
+	bool is_stopped() 		{ return motor_state == STOP;	 }
 
-	bool is_closing() {
-		return motion_state == CLOSING;
-	}
 
-	bool is_idle() {
-		return motion_state == IDLE;
-	}
+	// State of actuator position
+	bool is_retracted() { return read_state() == RETRACTED; }
+	bool is_extended() 	{ return read_state() == EXTENDED; 	}
 
-	bool is_open() {
-		return get_open_state() == OPEN;
-	}
-
-	bool is_closed() {
-		return get_open_state() == CLOSED;
-	}
-
-	void open(uint16_t t = 10) {
-		while (!is_open()) {
-			if (!is_opening()) {
-				set_motion_state(OPENING);
+	void retract() {
+		while (!is_retracted()) {
+			if (!is_retracting()) {
+				set_motor_state(RETRACT);
 			}
-			delay(t);
 		}
-		set_motion_state(IDLE);
+		set_motor_state(STOP);
 	}
 
-	void close(uint16_t t = 10) {
-		while (!is_closed()) {
-			if (!is_closing()) {
-				set_motion_state(CLOSING);
+	void extend() {
+		while (!is_extended()) {
+			if (!is_extending()) {
+				set_motor_state(EXTEND);
 			}
-			delay(t);
 		}
-		set_motion_state(IDLE);
+		set_motor_state(STOP);
 	}
 
-	float get_open_ratio() {
-		uint16_t neg_rail = analogRead(neg_pin);
-		uint16_t wiper = analogRead(wiper_pin);
-		uint16_t pos_rail = analogRead(pos_pin);
+	ActuatorState read_state() {
+		update_pot();
 
-		return ((float)wiper - (float)neg_rail) / ((float)pos_rail - (float)neg_rail);
-	}
-
-	OpenState get_open_state() {
-		uint16_t neg_rail = analogRead(neg_pin);
-		uint16_t wiper = analogRead(wiper_pin);
-		uint16_t pos_rail = analogRead(pos_pin);
-
-		// Serial << "get_open_state values: " << neg_rail << "\t" << wiper << "\t" << pos_rail << endl;
-
-		if (wiper <= neg_rail) {
-			return CLOSED;
+		if (pot.wiper <= pot.neg) {
+			return EXTENDED;
 		}
-		else if (wiper >= pos_rail) {
-			return OPEN;
+		else if (pot.wiper >= pot.pos) {
+			return RETRACTED;
 		}
 		else {
-			return MID;
+			return MIDDLE;
 		}
 	}
 };
