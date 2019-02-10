@@ -4,6 +4,8 @@
 #include <Adafruit_SSD1306.h>
 #include <Streaming.h>
 #include <Wire.h>
+#include <iterator> // for iterators
+#include <vector> // for vectors
 #include "Actuator.cc"
 #include "Ping.cc"
 #include "Pixels.cc"
@@ -20,95 +22,96 @@ Ping *ping = new Ping(PING_PIN);
 // Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
 
 volatile ulong loop_delay = 10;
-
 void isr_increase_delay();
-
 void isr_decrease_delay();
+void open_box();
+void display_line(String str);
+unsigned long close_timer_mark = millis();
 
 void setup() {
 	Serial.begin(115200);
-	pinMode(BUTTON_A, INPUT_PULLUP);
-	attachInterrupt(BUTTON_A, isr_increase_delay, FALLING);
-	pinMode(BUTTON_B, INPUT_PULLUP);
-	pinMode(BUTTON_C, INPUT_PULLUP);
-	attachInterrupt(BUTTON_C, isr_decrease_delay, FALLING);
+	// pinMode(BUTTON_A, INPUT_PULLUP);
+	// attachInterrupt(BUTTON_A, isr_increase_delay, FALLING);
+	// pinMode(BUTTON_B, INPUT_PULLUP);
+	// pinMode(BUTTON_C, INPUT_PULLUP);
+	// attachInterrupt(BUTTON_C, isr_decrease_delay, FALLING);
 
-	actuator -> begin();
-	// pixels -> begin();
-	display -> begin(SSD1306_SWITCHCAPVCC, 0x3C);
-	display -> clearDisplay();
-	display -> setTextSize(1);
-	display -> setTextColor(WHITE);
-
-	while (!actuator -> is_extended()) {
-		actuator -> extend();
-	}
+	actuator->begin();
+	// pixels->begin();
+	display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
+	display->clearDisplay();
+	display->setTextSize(1);
+	display->setTextColor(WHITE);
+	ledcSetup(SOUND_CHANNEL, SOUND_FREQ, SOUND_RESOLUTION);
+	ledcAttachPin(SOUND_PIN, SOUND_CHANNEL);
+	// while (!actuator->is_extended()) {
+	// 	actuator->extend();
+	// }
 
 }
 
-void display_line(String str) {
-	display -> clearDisplay();
-	display -> setCursor(0, 0);
-	display -> println(str);
-	display -> display();
+void print_sound_freq() {
+	display->clearDisplay();
+	display->setCursor(0, 0);
+	display->println(ledcReadFreq(SOUND_CHANNEL));
+	display->display();
 }
 
-bool box_is_open() 	 { return actuator -> is_retracted(); 	}
-bool box_is_closed() { return actuator -> is_extended(); 	}
-
-void close_box() 	 { actuator -> extend(); 	}
-
-unsigned long close_timer_mark = millis();
-
-void open_box() {
-	Serial << "Opening box" << endl;
-	while (!box_is_open()) {
-		actuator -> retract();
-	}
-	Serial << "Box should be open, setting close timer mark" << endl;
-	close_timer_mark = millis();
-}
-
-// bool box_is_watch_mode() {
-// 	return actuator -> is_retracted() || actuator -> is_retracting();
-// }
+std::vector<note_t> notes = {
+	NOTE_C, NOTE_Cs, NOTE_D, NOTE_Eb, NOTE_E, NOTE_F, NOTE_Fs, NOTE_G, NOTE_Gs, NOTE_A, NOTE_Bb, NOTE_B, NOTE_MAX
+};
 
 void loop() {
-	// Trigger OPEN
-	if (
-		(actuator -> is_extended() || actuator -> is_extending())
-		&& (ping -> read_inches() <= PING_THRESHOLD_INCHES)
-	) {
-		Serial << "TRIGGERING OPEN" << endl;
-		if (box_is_closed()) {
-			Serial << "PLAYING SOUND" << endl;
-		}
-
-		open_box();
-	}
-	// Trigger CLOSE
-	else if (box_is_open() && (millis() - close_timer_mark >= CLOSE_TIMER_MS)) {
-		Serial << "TRIGGERING CLOSE" << endl;
-		actuator -> extend();
+	for (auto note = notes.begin(); note < notes.end(); note++) {
+		display->clearDisplay();
+		display->setCursor(0, 0);
+		display->print("Octave ");
+		display->println(SOUND_OCTAVE);
+		display->print("Note ");
+		display->println(*note);
+		display->print("Freq ");
+		display->println(ledcWriteNote(SOUND_CHANNEL, *note, SOUND_OCTAVE));
+		display->display();
+		// print_sound_freq();
+		delay(500);
 	}
 
-	display -> clearDisplay();
-	display -> setCursor(0, 0);
-	display -> print("Wiper");
-	display -> println(actuator -> get_wiper());
-	display -> print("Extended? ");
-	display -> println(actuator -> is_extended() ? "Yes" : "No");
-	// display -> print("Extending? ");
-	// display -> println(actuator -> is_extending() ? "Yes" : "No");
-	display -> print("Retracted? ");
-	display -> println(actuator -> is_retracted() ? "Yes" : "No");
-	// display -> print("Retracting? ");
-	// display -> println(actuator -> is_retracting() ? "Yes" : "No");
-	display -> println(ping -> read_inches());
-	display -> display();
+	// for (int dutyCycle = 0xFFF; dutyCycle >= 0xF; dutyCycle--) {
+	// 	ledcWrite(SOUND_CHANNEL, dutyCycle);
+	// 	delay(7);
+	// }
+	// actuator->update();
+	// // Trigger OPEN
+	// if (
+	// 	(actuator->is_extended() || actuator->is_extending())
+	// 	&& (ping->read_inches() <= PING_THRESHOLD_INCHES)
+	// ) {
+	// 	Serial << "TRIGGERING OPEN" << endl;
+	// 	if (actuator->is_extended()) {
+	// 		Serial << "PLAYING SOUND" << endl;
+	// 	}
+
+	// 	open_box();
+	// }
+	// // Trigger CLOSE
+	// else if (actuator->is_retracted() && (millis() - close_timer_mark >= CLOSE_TIMER_MS)) {
+	// 	Serial << "TRIGGERING CLOSE" << endl;
+	// 	actuator->extend();
+	// }
+
+	// display->clearDisplay();
+	// display->setCursor(0, 0);
+	// display->print("Wiper");
+	// display->println(actuator->get_wiper());
+	// display->print("Extended? ");
+	// display->println(actuator->is_extended() ? "Yes" : "No");
+	// display->print("Retracted? ");
+	// display->println(actuator->is_retracted() ? "Yes" : "No");
+	// display->println(ping->read_inches());
+	// display->display();
 
 	delay(5);
-	// display_line(String(ping -> read_inches()));
+	// display_line(String(ping->read_inches()));
 	// display_line("Retracting...");
 	// while (!box_is_open()) {
 	// 	open_box();
@@ -123,9 +126,9 @@ void loop() {
 	// display_line("done extending!");
 	// delay(1000);
 
-	// if (actuator -> is_closed() || actuator -> is_closing()) {
-	// 	long prox = ping -> read_inches();
-	// 	display -> print(prox);
+	// if (actuator->is_closed() || actuator->is_closing()) {
+	// 	long prox = ping->read_inches();
+	// 	display->print(prox);
 
 	// 	if (prox > PING_THRESHOLD_INCHES) {
 	// 		// Make a sound
@@ -133,8 +136,29 @@ void loop() {
 	// 		// Reset close timer
 	// 	}
 	// }
-	// pixels -> update();
-	// pixels -> display();
+	// pixels->update();
+	// pixels->display();
+}
+
+void open_box() {
+	Serial << "Opening box" << endl;
+	long i = 0;
+	while (!actuator->is_retracted()) {
+		actuator->retract();
+
+		if (i++ % 100) {
+			actuator->print_pot();
+		}
+	}
+	Serial << "Box should be open, setting close timer mark" << endl;
+	close_timer_mark = millis();
+}
+
+void display_line(String str) {
+	display->clearDisplay();
+	display->setCursor(0, 0);
+	display->println(str);
+	display->display();
 }
 
 void isr_increase_delay() {
@@ -156,15 +180,15 @@ void print_pot_pins() {
 	min_wiper_value = min(wiper, min_wiper_value);
 	max_wiper_value = max(wiper, max_wiper_value);
 
-	display -> clearDisplay();
-	display -> setCursor(0, 0);
-	display -> print(min_wiper_value);
-	display -> setCursor(64, 0);
-	display -> println(analogRead(ACT_POT_NEG_PIN));
-	display -> println(wiper);
-	display -> print(max_wiper_value);
-	display -> setCursor(64, display -> getCursorY());
-	display -> println(analogRead(ACT_POT_POS_PIN));
-	display -> display();
+	display->clearDisplay();
+	display->setCursor(0, 0);
+	display->print(min_wiper_value);
+	display->setCursor(64, 0);
+	display->println(analogRead(ACT_POT_NEG_PIN));
+	display->println(wiper);
+	display->print(max_wiper_value);
+	display->setCursor(64, display->getCursorY());
+	display->println(analogRead(ACT_POT_POS_PIN));
+	display->display();
 }
 */
