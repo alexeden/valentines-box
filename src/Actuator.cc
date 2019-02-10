@@ -132,7 +132,7 @@ public:
 
 	// State of actuator position
 	bool is_retracted() { return pot.wiper >= pot.pos - 10; }
-	bool is_extended() 	{ return pot.wiper <= pot.neg; 		}
+	bool is_extended() 	{ return pot.wiper <= pot.neg + 5;	}
 
 	void retract() {
 		update();
