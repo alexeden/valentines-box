@@ -220,7 +220,7 @@
                 "PING_THRESHOLD_INCHES=12",
                 "SOUND_CHANNEL=0",
                 "SOUND_FREQ=1000000",
-                "SOUND_OCTAVE=4",
+                "SOUND_OCTAVE=5",
                 "SOUND_PIN=27",
                 "SOUND_RESOLUTION=12",
                 "ESP32",

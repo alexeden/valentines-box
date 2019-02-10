@@ -9,6 +9,7 @@
 #include "Actuator.cc"
 #include "Ping.cc"
 #include "Pixels.cc"
+#include "Soundboard.cc"
 
 Actuator *actuator = new Actuator(
 	ACT_POT_NEG_PIN,
@@ -21,6 +22,11 @@ Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
 Ping *ping = new Ping(PING_PIN);
 // Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
 
+Soundboard *soundboard = new Soundboard(
+	SOUND_PIN,
+	SOUND_OCTAVE
+);
+
 volatile ulong loop_delay = 10;
 void isr_increase_delay();
 void isr_decrease_delay();
@@ -30,7 +36,7 @@ unsigned long close_timer_mark = millis();
 
 void setup() {
 	Serial.begin(115200);
-	// pinMode(BUTTON_A, INPUT_PULLUP);
+	pinMode(BUTTON_A, INPUT_PULLUP);
 	// attachInterrupt(BUTTON_A, isr_increase_delay, FALLING);
 	// pinMode(BUTTON_B, INPUT_PULLUP);
 	// pinMode(BUTTON_C, INPUT_PULLUP);
@@ -38,12 +44,11 @@ void setup() {
 
 	actuator->begin();
 	// pixels->begin();
+	soundboard->begin();
 	display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display->clearDisplay();
 	display->setTextSize(1);
 	display->setTextColor(WHITE);
-	ledcSetup(SOUND_CHANNEL, SOUND_FREQ, SOUND_RESOLUTION);
-	ledcAttachPin(SOUND_PIN, SOUND_CHANNEL);
 	// while (!actuator->is_extended()) {
 	// 	actuator->extend();
 	// }
@@ -57,23 +62,22 @@ void print_sound_freq() {
 	display->display();
 }
 
-std::vector<note_t> notes = {
-	NOTE_C, NOTE_Cs, NOTE_D, NOTE_Eb, NOTE_E, NOTE_F, NOTE_Fs, NOTE_G, NOTE_Gs, NOTE_A, NOTE_Bb, NOTE_B, NOTE_MAX
-};
-
 void loop() {
-	for (auto note = notes.begin(); note < notes.end(); note++) {
+	for (auto note = NOTES.begin(); note < NOTES.end(); note++) {
 		display->clearDisplay();
 		display->setCursor(0, 0);
 		display->print("Octave ");
-		display->println(SOUND_OCTAVE);
+		display->println(soundboard->octave);
 		display->print("Note ");
 		display->println(*note);
 		display->print("Freq ");
-		display->println(ledcWriteNote(SOUND_CHANNEL, *note, SOUND_OCTAVE));
+		display->println(soundboard->play_note(*note));
 		display->display();
+		while (digitalRead(BUTTON_A)) {
+			delay(300);
+		}
 		// print_sound_freq();
-		delay(500);
+		// delay(500);
 	}
 
 	// for (int dutyCycle = 0xFFF; dutyCycle >= 0xF; dutyCycle--) {
