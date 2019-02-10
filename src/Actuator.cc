@@ -105,6 +105,9 @@ public:
 			sum += value;
 		}
 		pot.wiper = (uint16_t)(sum / readings);
+
+		// Update the limit pin
+		digitalWrite(limit_led_pin, is_retracted() || is_extended() ? HIGH : LOW);
 	}
 
 	// State of actuator motion
