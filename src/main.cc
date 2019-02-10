@@ -58,22 +58,25 @@ void setup() {
 
 	actuator->begin();
 	// pixels->begin();
-	// soundboard->begin();
+	soundboard->begin();
 	display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display->clearDisplay();
 	display->setTextSize(1);
 	display->setTextColor(WHITE);
+	soundboard->play_tune(tada);
 	// while (!actuator->is_retracted()) {
 	// 	actuator->retract();
 	// }
 
 }
+
+int i = 0;
 void loop() {
 	actuator->update();
 
-	// if (++i % 100 == 0) {
-	// 	actuator->print_pot();
-	// }
+	if (++i % 50 == 0) {
+		actuator->print_pot();
+	}
 	// // Trigger OPEN
 	// if (
 	// 	(actuator->is_extended() || actuator->is_extending())

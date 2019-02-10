@@ -104,10 +104,19 @@ public:
 	}
 
 	void update() {
-		pot.pos = adc.readADC(adc_pot_pos_channel);
-		pot.neg = adc.readADC(adc_pot_neg_channel);
-		pot.wiper = adc.readADC(adc_wiper_channel);
+		int pos, neg, wiper;
 
+		while (true) {
+			pos = adc.readADC(adc_pot_pos_channel);
+			neg = adc.readADC(adc_pot_neg_channel);
+			wiper = adc.readADC(adc_wiper_channel);
+
+			if (neg == 0 && pos == 0x3FF) break;
+		}
+
+		pot.pos = pos;
+		pot.neg = neg;
+		pot.wiper = wiper;
 		// Update the limit pin
 		digitalWrite(limit_led_pin, is_retracted() || is_extended() ? HIGH : LOW);
 	}
@@ -119,7 +128,7 @@ public:
 
 
 	// State of actuator position
-	bool is_retracted() { return pot.wiper >= pot.pos; }
+	bool is_retracted() { return pot.wiper >= pot.pos - 10; }
 	bool is_extended() 	{ return pot.wiper <= pot.neg; 	}
 
 	void retract() {
