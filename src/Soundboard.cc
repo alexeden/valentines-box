@@ -2,8 +2,8 @@
 #define __Soundboard__
 
 #include <Streaming.h>
-#include <iterator> // for iterators
-#include <vector> // for vectors
+#include <iterator>
+#include <vector>
 #include <array>
 
 static const std::vector<note_t> NOTES = {
@@ -48,13 +48,11 @@ private:
 public:
 	const long freq;
 	const uint8_t channel;
-	const uint8_t octave;
 	const uint8_t pin;
 	const uint8_t resolution;
 
 	Soundboard (
 		uint8_t _pin,
-		uint8_t _octave,
 		uint8_t _channel = 0,
 		uint8_t _resolution = 16,
 		long _freq = 1E6
@@ -62,7 +60,6 @@ public:
 	: 	pin(_pin),
 		channel(_channel),
 		freq(_freq),
-		octave(_octave),
 		resolution(_resolution)
 	{}
 
@@ -77,7 +74,6 @@ public:
 
 	void mute() {
 		ledcWriteTone(channel, 0);
-
 	}
 
 	void play_tune(const Tune& tune) {

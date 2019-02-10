@@ -76,10 +76,10 @@ public:
 		uint8_t readings = 20;
 		for (uint8_t i = 0; i < readings; i++) {
 			float value = (float)analogRead(wiper_pin);
-			Serial << value << '\t';
+			// Serial << value << '\t';
 			sum += value;
 		}
-		Serial << endl;
+		// Serial << endl;
 		pot.wiper = (uint16_t)(sum / readings);
 	}
 
