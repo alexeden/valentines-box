@@ -20,20 +20,28 @@ static const std::vector<note_t> NOTES = {
 	NOTE_A, 	// 	440.01		880.01
 	NOTE_Bb, 	// 	466.19		932.40
 	NOTE_B,		// 	493.88		987.75
-	NOTE_MAX
+	NOTE_MAX	// 	MUTE
 };
 
-// using TuneSegment = std::tuple<note_t, unsigned double>;
+using Tune = std::vector<std::array<uint, 3>>;
 
-// static const PROGMEM uint tada[][2] = {
-static const std::vector<std::array<uint, 2>> tada = {
-	{ NOTE_C, 100 },
-	{ NOTE_Cs, 225 },
-	{ NOTE_Eb, 100 },
-	{ NOTE_E, 225 },
-	{ NOTE_Bb, 100 },
-	{ NOTE_B, 350 }
+static const Tune tada = {
+	{ NOTE_C, 75, 5 },
+	{ NOTE_Cs, 200, 5 },
+	{ NOTE_Eb, 75, 5 },
+	{ NOTE_E, 200, 5 },
+	{ NOTE_Bb, 75, 5 },
+	{ NOTE_B, 325, 5 }
 };
+
+static const Tune chirp = {
+	{ NOTE_Fs, 100, 6 },
+	{ NOTE_MAX, 25, 6 },
+	{ NOTE_Fs, 100, 6 },
+	{ NOTE_MAX, 25, 6 },
+	{ NOTE_Fs, 100, 6 }
+};
+
 
 class Soundboard {
 private:
@@ -63,8 +71,8 @@ public:
 		ledcAttachPin(pin, channel);
 	}
 
-	double play_note(uint note) {
-		return ledcWriteNote(channel, (note_t)note, octave);
+	double play_note(uint note, uint8_t oct = 5) {
+		return ledcWriteNote(channel, (note_t)note, oct);
 	}
 
 	void mute() {
@@ -72,9 +80,16 @@ public:
 
 	}
 
-	void play_tada() {
-		for (auto seg = tada.begin(); seg < tada.end(); seg++) {
-			play_note((*seg)[0]);
+	void play_tune(const Tune& tune) {
+		for (auto seg = tune.begin(); seg < tune.end(); seg++) {
+			auto note = (*seg)[0];
+			auto octave = (*seg)[2];
+			if (note == NOTE_MAX) {
+				mute();
+			}
+			else {
+				play_note(note, octave);
+			}
 			delay((*seg)[1]);
 		}
 		mute();

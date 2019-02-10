@@ -38,7 +38,7 @@ void setup() {
 	Serial.begin(115200);
 	pinMode(BUTTON_A, INPUT_PULLUP);
 	// attachInterrupt(BUTTON_A, isr_increase_delay, FALLING);
-	// pinMode(BUTTON_B, INPUT_PULLUP);
+	pinMode(BUTTON_B, INPUT_PULLUP);
 	// pinMode(BUTTON_C, INPUT_PULLUP);
 	// attachInterrupt(BUTTON_C, isr_decrease_delay, FALLING);
 
@@ -64,7 +64,10 @@ void print_sound_freq() {
 
 void loop() {
 	if (!digitalRead(BUTTON_A)) {
-		soundboard -> play_tada();
+		soundboard -> play_tune(tada);
+	}
+	if (!digitalRead(BUTTON_B)) {
+		soundboard -> play_tune(chirp);
 	}
 	// for (auto note = NOTES.begin(); note < NOTES.end(); note++) {
 	// 	display->clearDisplay();
