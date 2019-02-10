@@ -63,22 +63,25 @@ void print_sound_freq() {
 }
 
 void loop() {
-	for (auto note = NOTES.begin(); note < NOTES.end(); note++) {
-		display->clearDisplay();
-		display->setCursor(0, 0);
-		display->print("Octave ");
-		display->println(soundboard->octave);
-		display->print("Note ");
-		display->println(*note);
-		display->print("Freq ");
-		display->println(soundboard->play_note(*note));
-		display->display();
-		while (digitalRead(BUTTON_A)) {
-			delay(300);
-		}
-		// print_sound_freq();
-		// delay(500);
+	if (!digitalRead(BUTTON_A)) {
+		soundboard -> play_tada();
 	}
+	// for (auto note = NOTES.begin(); note < NOTES.end(); note++) {
+	// 	display->clearDisplay();
+	// 	display->setCursor(0, 0);
+	// 	display->print("Octave ");
+	// 	display->println(soundboard->octave);
+	// 	display->print("Note ");
+	// 	display->println(*note);
+	// 	display->print("Freq ");
+	// 	display->println(soundboard->play_note(*note));
+	// 	display->display();
+	// 	while (digitalRead(BUTTON_A)) {
+	// 		delay(300);
+	// 	}
+	// 	// print_sound_freq();
+	// 	// delay(500);
+	// }
 
 	// for (int dutyCycle = 0xFFF; dutyCycle >= 0xF; dutyCycle--) {
 	// 	ledcWrite(SOUND_CHANNEL, dutyCycle);
