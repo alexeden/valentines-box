@@ -45,19 +45,6 @@ private:
 		motor_state = ms;
 	}
 
-	void update_pot() {
-		pot.neg = analogRead(neg_pin);
-		pot.pos = analogRead(pos_pin);
-
-		float sum = 0;
-		uint8_t readings = 200;
-		for (uint8_t i; i < readings; i++) {
-			sum += (float)analogRead(wiper_pin);
-		}
-
-		pot.wiper = (uint16_t)(sum / readings);
-	}
-
 public:
     Actuator (
 		uint8_t _neg_pin,
@@ -78,7 +65,22 @@ public:
 		motor_shield.begin();
 		motor->setSpeed(255);
 		set_motor_state(STOP);
-		update_pot();
+		update();
+	}
+
+	void update() {
+		pot.neg = analogRead(neg_pin);
+		pot.pos = analogRead(pos_pin);
+
+		float sum = 0;
+		uint8_t readings = 20;
+		for (uint8_t i = 0; i < readings; i++) {
+			float value = (float)analogRead(wiper_pin);
+			Serial << value << '\t';
+			sum += value;
+		}
+		Serial << endl;
+		pot.wiper = (uint16_t)(sum / readings);
 	}
 
 	// State of actuator motion
@@ -88,17 +90,27 @@ public:
 
 
 	// State of actuator position
-	bool is_retracted() { return read_state() == RETRACTED; }
-	bool is_extended() 	{ return read_state() == EXTENDED; 	}
+	bool is_retracted() { return pot.wiper >= pot.pos; }
+	bool is_extended() 	{ return pot.wiper <= pot.neg; 	}
 
 	void retract() {
-		if (!is_retracting()) {
+		update();
+		if (is_retracted()) {
+			Serial << "Forcing STOP because actuator is fully retracted" << endl;
+			set_motor_state(STOP);
+		}
+		else {
 			set_motor_state(RETRACT);
 		}
 	}
 
 	void extend() {
-		if (!is_extending()) {
+		update();
+		if (is_extended()) {
+			Serial << "Forcing STOP because actuator is fully extended" << endl;
+			set_motor_state(STOP);
+		}
+		else {
 			set_motor_state(EXTEND);
 		}
 	}
@@ -109,28 +121,6 @@ public:
 
 	uint16_t get_wiper() {
 		return pot.wiper;
-	}
-
-	ActuatorState read_state() {
-		update_pot();
-
-		if (pot.wiper <= pot.neg) {
-			if (motor_state != STOP) {
-				Serial << "Forcing STOP because actuator is fully extended" << endl;
-				set_motor_state(STOP);
-			}
-			return EXTENDED;
-		}
-		else if (pot.wiper >= pot.pos) {
-			if (motor_state != STOP) {
-				Serial << "Forcing STOP because actuator is fully retracted" << endl;
-				set_motor_state(STOP);
-			}
-			return RETRACTED;
-		}
-		else {
-			return MIDDLE;
-		}
 	}
 };
 
