@@ -35,11 +35,11 @@ static const Tune tada = {
 };
 
 static const Tune chirp = {
-	{ NOTE_Fs, 100, 6 },
+	{ NOTE_A, 100, 6 },
 	{ NOTE_MAX, 25, 6 },
-	{ NOTE_Fs, 100, 6 },
+	{ NOTE_A, 100, 6 },
 	{ NOTE_MAX, 25, 6 },
-	{ NOTE_Fs, 100, 6 }
+	{ NOTE_A, 100, 6 }
 };
 
 
