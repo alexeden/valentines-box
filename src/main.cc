@@ -46,8 +46,8 @@ void setup() {
 	display->clearDisplay();
 	display->setTextSize(1);
 	display->setTextColor(WHITE);
-	// while (!actuator->is_extended()) {
-	// 	actuator->extend();
+	// while (!actuator->is_retracted()) {
+	// 	actuator->retract();
 	// }
 
 }
@@ -74,11 +74,11 @@ void loop() {
 
 	display->clearDisplay();
 	display->setCursor(0, 0);
-	display->print("(-)");
+	display->print("(-) ");
 	display->print(actuator->get_pot_neg());
-	display->print(" (+)");
+	display->print(" (+) ");
 	display->println(actuator->get_pot_pos());
-	display->print("(=)");
+	display->print("(=) ");
 	display->println(actuator->get_pot_wiper());
 
 

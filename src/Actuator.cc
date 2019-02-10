@@ -25,26 +25,42 @@ struct Pot {
 
 class Actuator {
 private:
-	const uint8_t limit_led_pin;
-	const uint8_t moving_led_pin;
-	const uint8_t stopped_led_pin;
-    const uint8_t motor_num;
     const uint8_t neg_pin;
-    const uint8_t pos_pin;
     const uint8_t wiper_pin;
-	Pot pot;
+    const uint8_t pos_pin;
+	const uint8_t stopped_led_pin;
+	const uint8_t moving_led_pin;
+	const uint8_t limit_led_pin;
+    const uint8_t motor_num;
 
+	Pot pot;
 	Adafruit_MotorShield motor_shield;
 	Adafruit_DCMotor *motor;
 	MotorState motor_state;
 
 	void set_motor_state(MotorState ms) {
-		motor->run(ms);
-		motor_state = ms;
+		if (ms != motor_state) {
+			motor->run(ms);
+			motor_state = ms;
+
+			switch (ms) {
+				case EXTEND:
+				case RETRACT: {
+					digitalWrite(moving_led_pin, HIGH);
+					digitalWrite(stopped_led_pin, LOW);
+					break;
+				}
+				case STOP: {
+					digitalWrite(moving_led_pin, LOW);
+					digitalWrite(stopped_led_pin, HIGH);
+					break;
+				}
+			}
+		}
 	}
 
 public:
-    Actuator (
+    Actuator(
 		uint8_t _neg_pin,
 		uint8_t _wiper_pin,
 		uint8_t _pos_pin,
@@ -56,10 +72,10 @@ public:
 	: 	neg_pin(_neg_pin),
 		wiper_pin(_wiper_pin),
 		pos_pin(_pos_pin),
-		motor_num(_motor_num),
 		stopped_led_pin(_stopped_led_pin),
 		moving_led_pin(_moving_led_pin),
 		limit_led_pin(_limit_led_pin),
+		motor_num(_motor_num),
 		motor_shield(Adafruit_MotorShield())
 	{
 		motor = motor_shield.getMotor(motor_num);
@@ -71,6 +87,9 @@ public:
 		pinMode(stopped_led_pin, OUTPUT);
 		pinMode(moving_led_pin, OUTPUT);
 		pinMode(limit_led_pin, OUTPUT);
+		digitalWrite(stopped_led_pin, LOW);
+		digitalWrite(moving_led_pin, LOW);
+		digitalWrite(limit_led_pin, LOW);
 		update();
 		set_motor_state(STOP);
 	}
@@ -83,10 +102,8 @@ public:
 		uint8_t readings = 20;
 		for (uint8_t i = 0; i < readings; i++) {
 			float value = (float)analogRead(wiper_pin);
-			// Serial << value << '\t';
 			sum += value;
 		}
-		// Serial << endl;
 		pot.wiper = (uint16_t)(sum / readings);
 	}
 

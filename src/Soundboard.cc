@@ -46,10 +46,10 @@ static const Tune chirp = {
 class Soundboard {
 private:
 public:
-	const long freq;
-	const uint8_t channel;
 	const uint8_t pin;
+	const uint8_t channel;
 	const uint8_t resolution;
+	const long freq;
 
 	Soundboard (
 		uint8_t _pin,
@@ -59,8 +59,8 @@ public:
 	)
 	: 	pin(_pin),
 		channel(_channel),
-		freq(_freq),
-		resolution(_resolution)
+		resolution(_resolution),
+		freq(_freq)
 	{}
 
 	void begin() {

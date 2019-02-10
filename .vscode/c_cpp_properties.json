@@ -222,7 +222,7 @@
                 "PING_PIN=21",
                 "PING_THRESHOLD_INCHES=12",
                 "SOUND_CHANNEL=0",
-                "SOUND_PIN=27",
+                "SOUND_PIN=13",
                 "SOUND_RESOLUTION=12",
                 "ESP32",
                 "ESP_PLATFORM",
