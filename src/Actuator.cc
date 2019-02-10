@@ -3,6 +3,7 @@
 
 #include <Wire.h>
 #include <Streaming.h>
+#include <Adafruit_MCP3008.h>
 #include <Adafruit_MotorShield.h>
 
 enum ActuatorState {
@@ -18,22 +19,27 @@ enum MotorState {
 };
 
 struct Pot {
-	uint16_t neg;
-	uint16_t wiper;
-	uint16_t pos;
+	int neg;
+	int wiper;
+	int pos;
 };
 
 class Actuator {
 private:
-    const uint8_t neg_pin;
-    const uint8_t wiper_pin;
-    const uint8_t pos_pin;
+    // const uint8_t neg_pin;
+    // const uint8_t wiper_pin;
+    // const uint8_t pos_pin;
+    const uint8_t adc_cs_pin;
+    const uint8_t adc_wiper_channel;
+    const uint8_t adc_pot_pos_channel;
+    const uint8_t adc_pot_neg_channel;
 	const uint8_t stopped_led_pin;
 	const uint8_t moving_led_pin;
 	const uint8_t limit_led_pin;
     const uint8_t motor_num;
 
 	Pot pot;
+	Adafruit_MCP3008 adc;
 	Adafruit_MotorShield motor_shield;
 	Adafruit_DCMotor *motor;
 	MotorState motor_state;
@@ -61,17 +67,19 @@ private:
 
 public:
     Actuator(
-		uint8_t _neg_pin,
-		uint8_t _wiper_pin,
-		uint8_t _pos_pin,
+		uint8_t _adc_cs_pin,
+		uint8_t _adc_wiper_channel,
+		uint8_t _adc_pot_pos_channel,
+		uint8_t _adc_pot_neg_channel,
 		uint8_t _stopped_led_pin,
 		uint8_t _moving_led_pin,
 		uint8_t _limit_led_pin,
 		uint8_t _motor_num
     )
-	: 	neg_pin(_neg_pin),
-		wiper_pin(_wiper_pin),
-		pos_pin(_pos_pin),
+	: 	adc_cs_pin(_adc_cs_pin),
+		adc_wiper_channel(_adc_wiper_channel),
+		adc_pot_pos_channel(_adc_pot_pos_channel),
+		adc_pot_neg_channel(_adc_pot_neg_channel),
 		stopped_led_pin(_stopped_led_pin),
 		moving_led_pin(_moving_led_pin),
 		limit_led_pin(_limit_led_pin),
@@ -82,6 +90,7 @@ public:
 	}
 
 	void begin() {
+		adc.begin(adc_cs_pin);
 		motor_shield.begin();
 		motor->setSpeed(255);
 		pinMode(stopped_led_pin, OUTPUT);
@@ -95,20 +104,9 @@ public:
 	}
 
 	void update() {
-		analogSetSamples(1);
-		// analogSetCycles();
-		pot.neg = analogRead(neg_pin);
-		pot.pos = analogRead(pos_pin);
-
-		// float sum = 0;
-		// uint8_t readings = 20;
-		// for (uint8_t i = 0; i < readings; i++) {
-		// 	float value = (float)analogRead(wiper_pin);
-		// 	sum += value;
-		// }
-		// pot.wiper = (uint16_t)(sum / readings);
-
-		pot.wiper = analogRead(wiper_pin);
+		pot.pos = adc.readADC(adc_pot_pos_channel);
+		pot.neg = adc.readADC(adc_pot_neg_channel);
+		pot.wiper = adc.readADC(adc_wiper_channel);
 
 		// Update the limit pin
 		digitalWrite(limit_led_pin, is_retracted() || is_extended() ? HIGH : LOW);
@@ -150,9 +148,9 @@ public:
 		Serial << motor_state << '\t' << pot.wiper << '\t' << pot.neg << '\t' << pot.pos << endl;
 	}
 
-	uint16_t get_pot_wiper() { return pot.wiper; }
-	uint16_t get_pot_pos() { return pot.pos; }
-	uint16_t get_pot_neg() { return pot.neg; }
+	int get_pot_wiper() { return pot.wiper; }
+	int get_pot_pos() { return pot.pos; }
+	int get_pot_neg() { return pot.neg; }
 };
 
 

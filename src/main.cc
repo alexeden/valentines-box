@@ -1,4 +1,5 @@
 #include <Adafruit_GFX.h>
+#include <Adafruit_MCP3008.h>
 #include <Adafruit_MotorShield.h>
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_SSD1306.h>
@@ -11,17 +12,22 @@
 #include "Soundboard.cc"
 
 Actuator *actuator = new Actuator(
-	ACT_POT_NEG_PIN,
-	ACT_POT_WIPER_PIN,
-	ACT_POT_POS_PIN,
+	ACT_ADC_CS_PIN,
+	ACT_WIPER_ADC_CHANNEL,
+	ACT_POT_POS_ADC_CHANNEL,
+	ACT_POT_NEG_ADC_CHANNEL,
 	ACT_STOPPED_LED_PIN,
 	ACT_MOVING_LED_PIN,
 	ACT_LIMIT_LED_PIN,
 	MOTOR_NUM
 );
+
 Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
+
 Ping *ping = new Ping(PING_PIN);
+
 Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
+
 Soundboard *soundboard = new Soundboard(SOUND_PIN, SOUND_CHANNEL, SOUND_RESOLUTION);
 
 volatile ulong loop_delay = 10;
@@ -44,15 +50,15 @@ void isr_c() {
 
 void setup() {
 	Serial.begin(115200);
-	pinMode(BUTTON_A, INPUT_PULLUP);
-	attachInterrupt(BUTTON_A, isr_a, FALLING);
-	// pinMode(BUTTON_B, INPUT_PULLUP);
-	pinMode(BUTTON_C, INPUT_PULLUP);
-	attachInterrupt(BUTTON_C, isr_c, FALLING);
+	// pinMode(BUTTON_A, INPUT_PULLUP);
+	// attachInterrupt(BUTTON_A, isr_a, FALLING);
+	// // pinMode(BUTTON_B, INPUT_PULLUP);
+	// pinMode(BUTTON_C, INPUT_PULLUP);
+	// attachInterrupt(BUTTON_C, isr_c, FALLING);
 
 	actuator->begin();
 	// pixels->begin();
-	soundboard->begin();
+	// soundboard->begin();
 	display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	display->clearDisplay();
 	display->setTextSize(1);
@@ -62,9 +68,12 @@ void setup() {
 	// }
 
 }
-
 void loop() {
 	actuator->update();
+
+	// if (++i % 100 == 0) {
+	// 	actuator->print_pot();
+	// }
 	// // Trigger OPEN
 	// if (
 	// 	(actuator->is_extended() || actuator->is_extending())
