@@ -33,7 +33,6 @@ private:
     const uint8_t adc_wiper_channel;
     const uint8_t adc_pot_pos_channel;
     const uint8_t adc_pot_neg_channel;
-	const uint8_t stopped_led_pin;
 	const uint8_t moving_led_pin;
 	const uint8_t limit_led_pin;
     const uint8_t motor_num;
@@ -53,12 +52,10 @@ private:
 				case EXTEND:
 				case RETRACT: {
 					digitalWrite(moving_led_pin, HIGH);
-					digitalWrite(stopped_led_pin, LOW);
 					break;
 				}
 				case STOP: {
 					digitalWrite(moving_led_pin, LOW);
-					digitalWrite(stopped_led_pin, HIGH);
 					break;
 				}
 			}
@@ -71,7 +68,6 @@ public:
 		uint8_t _adc_wiper_channel,
 		uint8_t _adc_pot_pos_channel,
 		uint8_t _adc_pot_neg_channel,
-		uint8_t _stopped_led_pin,
 		uint8_t _moving_led_pin,
 		uint8_t _limit_led_pin,
 		uint8_t _motor_num
@@ -80,7 +76,6 @@ public:
 		adc_wiper_channel(_adc_wiper_channel),
 		adc_pot_pos_channel(_adc_pot_pos_channel),
 		adc_pot_neg_channel(_adc_pot_neg_channel),
-		stopped_led_pin(_stopped_led_pin),
 		moving_led_pin(_moving_led_pin),
 		limit_led_pin(_limit_led_pin),
 		motor_num(_motor_num),
@@ -93,10 +88,8 @@ public:
 		adc.begin(adc_cs_pin);
 		motor_shield.begin();
 		motor->setSpeed(255);
-		pinMode(stopped_led_pin, OUTPUT);
 		pinMode(moving_led_pin, OUTPUT);
 		pinMode(limit_led_pin, OUTPUT);
-		digitalWrite(stopped_led_pin, LOW);
 		digitalWrite(moving_led_pin, LOW);
 		digitalWrite(limit_led_pin, LOW);
 		update();
@@ -117,40 +110,38 @@ public:
 		pot.pos = pos;
 		pot.neg = neg;
 		pot.wiper = wiper;
+
+		if (is_retracting() && is_retracted()) {
+			Serial << "Forcing STOP because actuator is fully retracted" << endl;
+			set_motor_state(STOP);
+		}
+		else if (is_extending() && is_extended()) {
+			Serial << "Forcing STOP because actuator is fully extended" << endl;
+			set_motor_state(STOP);
+		}
+
 		// Update the limit pin
 		digitalWrite(limit_led_pin, is_retracted() || is_extended() ? HIGH : LOW);
 	}
 
 	// State of actuator motion
-	bool is_extending()		{ return motor_state == EXTEND;	 }
-	bool is_retracting() 	{ return motor_state == RETRACT; }
-	bool is_stopped() 		{ return motor_state == STOP;	 }
+	bool is_extending()	 { return motor_state == EXTEND;	}
+	bool is_retracting() { return motor_state == RETRACT; 	}
+	bool is_stopped()    { return motor_state == STOP;	 	}
 
 
 	// State of actuator position
 	bool is_retracted() { return pot.wiper >= pot.pos - 10; }
-	bool is_extended() 	{ return pot.wiper <= pot.neg; 	}
+	bool is_extended() 	{ return pot.wiper <= pot.neg; 		}
 
 	void retract() {
 		update();
-		if (is_retracted()) {
-			Serial << "Forcing STOP because actuator is fully retracted" << endl;
-			set_motor_state(STOP);
-		}
-		else {
-			set_motor_state(RETRACT);
-		}
+		set_motor_state(RETRACT);
 	}
 
 	void extend() {
 		update();
-		if (is_extended()) {
-			Serial << "Forcing STOP because actuator is fully extended" << endl;
-			set_motor_state(STOP);
-		}
-		else {
-			set_motor_state(EXTEND);
-		}
+		set_motor_state(EXTEND);
 	}
 
 	void print_pot() {

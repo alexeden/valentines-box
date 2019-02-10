@@ -34,6 +34,15 @@ static const Tune tada = {
 	{ NOTE_B, 325, 5 }
 };
 
+static const Tune tada_reverse = {
+	{ NOTE_B, 325, 5 },
+	{ NOTE_Bb, 75, 5 },
+	{ NOTE_E, 200, 5 },
+	{ NOTE_Eb, 75, 5 },
+	{ NOTE_Cs, 200, 5 },
+	{ NOTE_C, 75, 5 }
+};
+
 static const Tune chirp = {
 	{ NOTE_A, 100, 6 },
 	{ NOTE_MAX, 25, 6 },

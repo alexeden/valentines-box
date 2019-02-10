@@ -16,7 +16,6 @@ Actuator *actuator = new Actuator(
 	ACT_WIPER_ADC_CHANNEL,
 	ACT_POT_POS_ADC_CHANNEL,
 	ACT_POT_NEG_ADC_CHANNEL,
-	ACT_STOPPED_LED_PIN,
 	ACT_MOVING_LED_PIN,
 	ACT_LIMIT_LED_PIN,
 	MOTOR_NUM
@@ -38,13 +37,13 @@ void display_line(String str);
 unsigned long close_timer_mark = millis();
 
 
-volatile uint8_t analog_cycles = 8;
+// volatile uint8_t analog_cycles = 8;
 
 void isr_a() {
-	analogSetCycles(++analog_cycles);
+	// analogSetCycles(++analog_cycles);
 }
 void isr_c() {
-	analogSetCycles(--analog_cycles);
+	// analogSetCycles(--analog_cycles);
 }
 
 
@@ -63,37 +62,46 @@ void setup() {
 	display->clearDisplay();
 	display->setTextSize(1);
 	display->setTextColor(WHITE);
-	soundboard->play_tune(tada);
-	// while (!actuator->is_retracted()) {
-	// 	actuator->retract();
-	// }
-
+	while (!actuator->is_extended()) {
+		actuator->extend();
+	}
 }
 
-int i = 0;
+// int i = 0;
+
 void loop() {
 	actuator->update();
 
-	if (++i % 50 == 0) {
-		actuator->print_pot();
-	}
-	// // Trigger OPEN
-	// if (
-	// 	(actuator->is_extended() || actuator->is_extending())
-	// 	&& (ping->read_inches() <= PING_THRESHOLD_INCHES)
-	// ) {
-	// 	Serial << "TRIGGERING OPEN" << endl;
-	// 	if (actuator->is_extended()) {
-	// 		Serial << "PLAYING SOUND" << endl;
-	// 	}
+	// long inches = ping->read_inches();
 
-	// 	open_box();
-	// }
-	// // Trigger CLOSE
-	// else if (actuator->is_retracted() && (millis() - close_timer_mark >= CLOSE_TIMER_MS)) {
-	// 	Serial << "TRIGGERING CLOSE" << endl;
-	// 	actuator->extend();
-	// }
+	// Trigger OPEN
+	if (
+		(actuator->is_extended() || actuator->is_extending())
+		&& (ping->read_inches() <= PING_THRESHOLD_INCHES)
+	) {
+		Serial << "TRIGGERING OPEN" << endl;
+
+		if (actuator->is_extended()) {
+			soundboard->play_tune(tada);
+			Serial << "PLAYING SOUND" << endl;
+		}
+		else {
+			soundboard->play_tune(chirp);
+		}
+
+		open_box();
+	}
+	// Trigger CLOSE
+	else if (
+		actuator->is_retracted()
+		&& (millis() - close_timer_mark >= CLOSE_TIMER_MS)
+		&& (ping->read_inches() > PING_THRESHOLD_INCHES)
+	) {
+		Serial << "TRIGGERING CLOSE" << endl;
+		soundboard->play_tune(tada_reverse);
+		actuator->extend();
+		delay(1000);
+	}
 
 	display->clearDisplay();
 	display->setCursor(0, 0);
@@ -114,37 +122,12 @@ void loop() {
 	else {
 		display->println("---");
 	}
-	// display->println(ping->read_inches());
-	display->print("Cycles: ");
-	display->println(analog_cycles);
+	display->print("Ping: ");
+	display->println(ping->read_inches());
 	display->display();
 
 	delay(5);
-	// display_line(String(ping->read_inches()));
-	// display_line("Retracting...");
-	// while (!box_is_open()) {
-	// 	open_box();
-	// }
-	// display_line("done retracting!");
-	// delay(1000);
 
-	// display_line("Extending...");
-	// while (!box_is_closed()) {
-	// 	close_box();
-	// }
-	// display_line("done extending!");
-	// delay(1000);
-
-	// if (actuator->is_closed() || actuator->is_closing()) {
-	// 	long prox = ping->read_inches();
-	// 	display->print(prox);
-
-	// 	if (prox > PING_THRESHOLD_INCHES) {
-	// 		// Make a sound
-	// 		// Open
-	// 		// Reset close timer
-	// 	}
-	// }
 	// pixels->update();
 	// pixels->display();
 }
