@@ -15,10 +15,6 @@ enum MotorState {
 	EXTEND = FORWARD,
 	RETRACT = BACKWARD,
 	STOP = RELEASE
-
-	// OPENING = FORWARD,
-	// EXTEND = BACKWARD,
-	// STOP = RELEASE
 };
 
 struct Pot {
@@ -29,11 +25,13 @@ struct Pot {
 
 class Actuator {
 private:
-    const uint8_t neg_pin;
-    const uint8_t wiper_pin;
-    const uint8_t pos_pin;
+	const uint8_t limit_led_pin;
+	const uint8_t moving_led_pin;
+	const uint8_t stopped_led_pin;
     const uint8_t motor_num;
-
+    const uint8_t neg_pin;
+    const uint8_t pos_pin;
+    const uint8_t wiper_pin;
 	Pot pot;
 
 	Adafruit_MotorShield motor_shield;
@@ -50,12 +48,18 @@ public:
 		uint8_t _neg_pin,
 		uint8_t _wiper_pin,
 		uint8_t _pos_pin,
+		uint8_t _stopped_led_pin,
+		uint8_t _moving_led_pin,
+		uint8_t _limit_led_pin,
 		uint8_t _motor_num
     )
 	: 	neg_pin(_neg_pin),
 		wiper_pin(_wiper_pin),
 		pos_pin(_pos_pin),
 		motor_num(_motor_num),
+		stopped_led_pin(_stopped_led_pin),
+		moving_led_pin(_moving_led_pin),
+		limit_led_pin(_limit_led_pin),
 		motor_shield(Adafruit_MotorShield())
 	{
 		motor = motor_shield.getMotor(motor_num);
@@ -64,8 +68,11 @@ public:
 	void begin() {
 		motor_shield.begin();
 		motor->setSpeed(255);
-		set_motor_state(STOP);
+		pinMode(stopped_led_pin, OUTPUT);
+		pinMode(moving_led_pin, OUTPUT);
+		pinMode(limit_led_pin, OUTPUT);
 		update();
+		set_motor_state(STOP);
 	}
 
 	void update() {
@@ -119,9 +126,9 @@ public:
 		Serial << motor_state << '\t' << pot.wiper << '\t' << pot.neg << '\t' << pot.pos << endl;
 	}
 
-	uint16_t get_wiper() {
-		return pot.wiper;
-	}
+	uint16_t get_pot_wiper() { return pot.wiper; }
+	uint16_t get_pot_pos() { return pot.pos; }
+	uint16_t get_pot_neg() { return pot.neg; }
 };
 
 

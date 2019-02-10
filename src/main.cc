@@ -3,7 +3,6 @@
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_SSD1306.h>
 #include <Streaming.h>
-#include <Wire.h>
 #include <iterator>
 #include <vector>
 #include "Actuator.cc"
@@ -11,7 +10,15 @@
 #include "Pixels.cc"
 #include "Soundboard.cc"
 
-Actuator *actuator = new Actuator(ACT_POT_NEG_PIN, ACT_POT_WIPER_PIN, ACT_POT_POS_PIN, MOTOR_NUM);
+Actuator *actuator = new Actuator(
+	ACT_POT_NEG_PIN,
+	ACT_POT_WIPER_PIN,
+	ACT_POT_POS_PIN,
+	ACT_STOPPED_LED_PIN,
+	ACT_MOVING_LED_PIN,
+	ACT_LIMIT_LED_PIN,
+	MOTOR_NUM
+);
 Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
 Ping *ping = new Ping(PING_PIN);
 Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
@@ -45,13 +52,6 @@ void setup() {
 
 }
 
-void print_sound_freq() {
-	display->clearDisplay();
-	display->setCursor(0, 0);
-	display->println(ledcReadFreq(SOUND_CHANNEL));
-	display->display();
-}
-
 void loop() {
 	actuator->update();
 	// // Trigger OPEN
@@ -72,16 +72,27 @@ void loop() {
 	// 	actuator->extend();
 	// }
 
-	// display->clearDisplay();
-	// display->setCursor(0, 0);
-	// display->print("Wiper");
-	// display->println(actuator->get_wiper());
-	// display->print("Extended? ");
-	// display->println(actuator->is_extended() ? "Yes" : "No");
-	// display->print("Retracted? ");
-	// display->println(actuator->is_retracted() ? "Yes" : "No");
-	// display->println(ping->read_inches());
-	// display->display();
+	display->clearDisplay();
+	display->setCursor(0, 0);
+	display->print("(-)");
+	display->print(actuator->get_pot_neg());
+	display->print(" (+)");
+	display->println(actuator->get_pot_pos());
+	display->print("(=)");
+	display->println(actuator->get_pot_wiper());
+
+
+	if (actuator->is_extended()) {
+		display->println("EXTENDED");
+	}
+	else if (actuator->is_retracted()) {
+		display->println("RETRACTED");
+	}
+	else {
+		display->println("---");
+	}
+	display->println(ping->read_inches());
+	display->display();
 
 	delay(5);
 	// display_line(String(ping->read_inches()));
