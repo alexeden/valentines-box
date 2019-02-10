@@ -31,13 +31,24 @@ void open_box();
 void display_line(String str);
 unsigned long close_timer_mark = millis();
 
+
+volatile uint8_t analog_cycles = 8;
+
+void isr_a() {
+	analogSetCycles(++analog_cycles);
+}
+void isr_c() {
+	analogSetCycles(--analog_cycles);
+}
+
+
 void setup() {
 	Serial.begin(115200);
-	// pinMode(BUTTON_A, INPUT_PULLUP);
-	// attachInterrupt(BUTTON_A, isr_increase_delay, FALLING);
+	pinMode(BUTTON_A, INPUT_PULLUP);
+	attachInterrupt(BUTTON_A, isr_a, FALLING);
 	// pinMode(BUTTON_B, INPUT_PULLUP);
-	// pinMode(BUTTON_C, INPUT_PULLUP);
-	// attachInterrupt(BUTTON_C, isr_decrease_delay, FALLING);
+	pinMode(BUTTON_C, INPUT_PULLUP);
+	attachInterrupt(BUTTON_C, isr_c, FALLING);
 
 	actuator->begin();
 	// pixels->begin();
@@ -91,7 +102,9 @@ void loop() {
 	else {
 		display->println("---");
 	}
-	display->println(ping->read_inches());
+	// display->println(ping->read_inches());
+	display->print("Cycles: ");
+	display->println(analog_cycles);
 	display->display();
 
 	delay(5);

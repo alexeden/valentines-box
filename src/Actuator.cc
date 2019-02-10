@@ -95,16 +95,20 @@ public:
 	}
 
 	void update() {
+		analogSetSamples(1);
+		// analogSetCycles();
 		pot.neg = analogRead(neg_pin);
 		pot.pos = analogRead(pos_pin);
 
-		float sum = 0;
-		uint8_t readings = 20;
-		for (uint8_t i = 0; i < readings; i++) {
-			float value = (float)analogRead(wiper_pin);
-			sum += value;
-		}
-		pot.wiper = (uint16_t)(sum / readings);
+		// float sum = 0;
+		// uint8_t readings = 20;
+		// for (uint8_t i = 0; i < readings; i++) {
+		// 	float value = (float)analogRead(wiper_pin);
+		// 	sum += value;
+		// }
+		// pot.wiper = (uint16_t)(sum / readings);
+
+		pot.wiper = analogRead(wiper_pin);
 
 		// Update the limit pin
 		digitalWrite(limit_led_pin, is_retracted() || is_extended() ? HIGH : LOW);
