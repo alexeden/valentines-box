@@ -75,6 +75,7 @@ public:
 	void begin() {
 		ledcSetup(channel, freq, resolution);
 		ledcAttachPin(pin, channel);
+		Serial << "Soundboard ready" << endl;
 	}
 
 	double play_note(uint note, uint8_t oct = 5) {

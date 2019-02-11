@@ -94,6 +94,7 @@ public:
 		digitalWrite(limit_led_pin, LOW);
 		update();
 		set_motor_state(STOP);
+		Serial << "Actuator ready" << endl;
 	}
 
 	void update() {
