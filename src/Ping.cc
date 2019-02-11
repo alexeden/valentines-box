@@ -36,8 +36,6 @@ public:
 		delayMicroseconds(5);
 		digitalWrite(pin, LOW);
 		pinMode(pin, INPUT);
-		// Average max 21608
-		// Average min 296
 		return pulseIn(pin, HIGH, 4 * timeout_us);
 	}
 

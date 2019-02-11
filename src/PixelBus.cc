@@ -1,16 +1,15 @@
-#ifndef __PixelBux__
-#define __PixelBux__
+#ifndef __PixelBus__
+#define __PixelBus__
 
-#include <Wire.h>
 #include <Streaming.h>
-#include <Adafruit_NeoPixel.h>
+#include <NeoPixelBus.h>
 
 class PixelBus {
 
 private:
 	const float DEGRADE = 0.8;
     const uint8_t PIN, N;
-	Adafruit_NeoPixel *strip;
+	NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> *strip;
 	float x;
 	float v;
 	uint32_t *pixels;
@@ -19,12 +18,6 @@ private:
 	void rotate() {
 		while (x <= 0) x += N;
 		while (x >= N) x -= N;
-	}
-
-	void reverse() {
-		if (x > N || x < 0) {
-			v *= -1;
-		}
 	}
 
 	void degrade(uint32_t &pixel) {
@@ -40,15 +33,15 @@ public:
     PixelBus (uint8_t _pin, uint8_t _n)
 	: 	PIN(_pin),
 		N(_n),
-		strip(new Adafruit_NeoPixel(_n, _pin, NEO_GRB + NEO_KHZ800)),
+		strip(new NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod>(_n, _pin)),
 		x(0.0),
 		v(0.4)
 	{}
 
 	void begin() {
 		pinMode(PIN, OUTPUT);
-		strip -> begin();
-		strip -> show();
+		strip->Begin();
+		strip->Show();
 		pixels = new uint32_t[N];
 		clear_pixels();
 		disp_mark = micros();
@@ -63,7 +56,9 @@ public:
 
 	void update() {
 		x += v;
-		reverse();
+		if (x > N || x < 0) {
+			v *= -1;
+		}
 	}
 
 	int8_t get_x() {
@@ -73,25 +68,28 @@ public:
 	void all_on() {
 		uint32_t bgr = 0x00ff1019;
 		for (int i = 0; i < N; i++) {
-			strip -> setPixelColor(i, bgr);
+			strip->SetPixelColor(i, bgr);
 		}
-		strip -> show();
+		strip->Show();
 	}
 
 	void display() {
 		uint32_t bgr = 0x00ff1019;
 
+
 		pixels[(int)x] = bgr;
 		for (int i = 0; i < N; i++) {
 			if (i == int(x)) {
-				strip -> setPixelColor(i, pixels[i]);
+				RgbColor c(pixels[i] >> 16 & 0xFF, pixels[i] >> 8 & 0xFF, pixels[i] & 0xFF);
+				strip->SetPixelColor(i, c);
 			}
 			else {
 				degrade(pixels[i]);
-				strip -> setPixelColor(i, pixels[i]);
+				RgbColor c(pixels[i] >> 16 & 0xFF, pixels[i] >> 8 & 0xFF, pixels[i] & 0xFF);
+				strip->SetPixelColor(i, c);
 			}
 		}
-		strip -> show();
+		strip->Show();
 		disp_mark = micros();
 	}
 

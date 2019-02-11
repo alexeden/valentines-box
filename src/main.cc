@@ -1,14 +1,12 @@
 #include <Adafruit_GFX.h>
-#include <Adafruit_MCP3008.h>
-#include <Adafruit_MotorShield.h>
-#include <Adafruit_NeoPixel.h>
 #include <Adafruit_SSD1306.h>
 #include <Streaming.h>
 #include <iterator>
 #include <vector>
 #include "Actuator.cc"
 #include "Ping.cc"
-#include "Pixels.cc"
+#include "PixelBus.cc"
+// #include "Pixels.cc"
 #include "Soundboard.cc"
 
 Actuator *actuator = new Actuator(
@@ -25,7 +23,7 @@ Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
 
 Ping *ping = new Ping(PING_PIN, PING_THRESHOLD_INCHES);
 
-Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
+PixelBus *pixels = new PixelBus(NEOPIXEL_PIN, 20);
 
 Soundboard *soundboard = new Soundboard(SOUND_PIN, SOUND_CHANNEL, SOUND_RESOLUTION);
 
@@ -61,10 +59,9 @@ long i = 0;
 
 void loop() {
 	// actuator->update();
-	auto us = ping->read_us();
+	ping->read_us();
 	pixels->update();
 	pixels->display();
-	// Serial << "microseconds: " << us << endl;
 	delay(20);
 	// Trigger OPEN
 	// if (
