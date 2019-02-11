@@ -36,22 +36,13 @@ void open_box();
 void display_line(String str);
 unsigned long close_timer_mark = millis();
 
-
-// volatile uint8_t analog_cycles = 8;
-
-void isr_a() {
-	// analogSetCycles(++analog_cycles);
-}
-void isr_c() {
-	// analogSetCycles(--analog_cycles);
-}
-
+void isr_a() { }
+void isr_c() { }
 
 void setup() {
 	Serial.begin(115200);
 	// pinMode(BUTTON_A, INPUT_PULLUP);
 	// attachInterrupt(BUTTON_A, isr_a, FALLING);
-	// // pinMode(BUTTON_B, INPUT_PULLUP);
 	// pinMode(BUTTON_C, INPUT_PULLUP);
 	// attachInterrupt(BUTTON_C, isr_c, FALLING);
 
@@ -78,30 +69,32 @@ void loop() {
 	// Trigger OPEN
 	if (
 		(actuator->is_extended() || actuator->is_extending())
-		&& false // (ping->read_inches() <= PING_THRESHOLD_INCHES)
+		&& (ping->read_inches() <= PING_THRESHOLD_INCHES)
 	) {
-		Serial << "TRIGGERING OPEN" << endl;
+		pixels->all_on();
 
 		if (actuator->is_extended()) {
 			soundboard->play_tune(tada);
-			Serial << "PLAYING SOUND" << endl;
 		}
 		else {
 			soundboard->play_tune(chirp);
 		}
-
 		open_box();
 	}
 	// Trigger CLOSE
 	else if (
 		actuator->is_retracted()
 		&& (millis() - close_timer_mark >= CLOSE_TIMER_MS)
-		&& false // (ping->read_inches() > PING_THRESHOLD_INCHES)
+		&& (ping->read_inches() > PING_THRESHOLD_INCHES)
 	) {
-		Serial << "TRIGGERING CLOSE" << endl;
+		pixels->all_on();
 		soundboard->play_tune(tada_reverse);
 		actuator->extend();
-		delay(1000);
+		delay(500);
+	}
+	// All pixels on when in motion
+	else if (actuator->is_extending() || actuator->is_retracting()) {
+		pixels->all_on();
 	}
 	else {
 		pixels->update();
@@ -125,15 +118,9 @@ void loop() {
 	else {
 		display->println("---");
 	}
-	// display->print("Ping: ");
-	// display->println(ping->read_inches());
+
 	display->display();
-
-	// // Serial << "End loop " << ++i << endl;
-	// pixels->update();
-	// pixels->display();
 	delay(10);
-
 }
 
 void open_box() {

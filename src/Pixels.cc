@@ -70,6 +70,14 @@ public:
 		return (int)x;
 	}
 
+	void all_on() {
+		uint32_t bgr = 0x00ff1019;
+		for (int i = 0; i < N; i++) {
+			strip -> setPixelColor(i, bgr);
+		}
+		strip -> show();
+	}
+
 	void display() {
 		uint32_t bgr = 0x00ff1019;
 
