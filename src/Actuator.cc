@@ -105,7 +105,7 @@ public:
 			neg = adc.readADC(adc_pot_neg_channel);
 			wiper = adc.readADC(adc_wiper_channel);
 
-			if (neg == 0 && pos == 0x3FF) break;
+			if (neg <= 1 && pos >= 1021 && wiper <= pos && wiper >= neg) break;
 		}
 
 		pot.pos = pos;
