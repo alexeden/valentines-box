@@ -1,14 +1,13 @@
 #ifndef __Ping__
 #define __Ping__
 
-#include <Wire.h>
 #include <Streaming.h>
 
 class Ping {
 private:
 	const uint8_t pin;
 
-	long read() {
+	unsigned long read() {
 		pinMode(pin, OUTPUT);
 		digitalWrite(pin, LOW);
 		delayMicroseconds(2);
@@ -16,22 +15,24 @@ private:
 		delayMicroseconds(5);
 		digitalWrite(pin, LOW);
 		pinMode(pin, INPUT);
-		return pulseIn(pin, HIGH);
+		// Average max 21608
+		// Average min 296
+		return pulseIn(pin, HIGH, 10000);
 	}
 
-	long _last_inches;
 
 public:
-	Ping (uint8_t _pin) : pin(_pin), _last_inches(0) {}
+	Ping (uint8_t _pin) : pin(_pin) {}
 
-	long read_inches() {
-		long inches = read() / 74 / 2;
-		_last_inches = inches;
-		return inches;
-	}
+	unsigned long read_inches() {
+		long reading = read();
 
-	long last_inches() {
-		return _last_inches;
+		if (reading == 0) {
+			return 146 * 74 * 2;
+		}
+		else {
+			return reading / 74 / 2;
+		}
 	}
 };
 #endif
