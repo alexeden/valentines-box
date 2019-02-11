@@ -23,7 +23,7 @@ Actuator *actuator = new Actuator(
 
 Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
 
-Ping *ping = new Ping(PING_PIN);
+Ping *ping = new Ping(PING_PIN, PING_THRESHOLD_INCHES);
 
 Pixels *pixels = new Pixels(NEOPIXEL_PIN, 20);
 
@@ -41,22 +41,18 @@ void isr_c() { }
 
 void setup() {
 	Serial.begin(115200);
-	// pinMode(BUTTON_A, INPUT_PULLUP);
-	// attachInterrupt(BUTTON_A, isr_a, FALLING);
-	// pinMode(BUTTON_C, INPUT_PULLUP);
-	// attachInterrupt(BUTTON_C, isr_c, FALLING);
-
-	soundboard->begin();
-	display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
-	pixels->begin();
 	actuator->begin();
+	display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
+	ping->begin();
+	pixels->begin();
+	soundboard->begin();
 	display->clearDisplay();
 	display->setTextSize(1);
 	display->setTextColor(WHITE);
 	soundboard->play_tune(chirp);
-	while (!actuator->is_extended()) {
-		actuator->extend();
-	}
+	// while (!actuator->is_extended()) {
+	// 	actuator->extend();
+	// }
 	soundboard->play_tune(chirp);
 	Serial << "End setup()" << endl;
 }
@@ -64,63 +60,67 @@ void setup() {
 long i = 0;
 
 void loop() {
-	actuator->update();
-
+	// actuator->update();
+	auto us = ping->read_us();
+	pixels->update();
+	pixels->display();
+	// Serial << "microseconds: " << us << endl;
+	delay(20);
 	// Trigger OPEN
-	if (
-		(actuator->is_extended() || actuator->is_extending())
-		&& (ping->read_inches() <= PING_THRESHOLD_INCHES)
-	) {
-		pixels->all_on();
+	// if (
+	// 	(actuator->is_extended() || actuator->is_extending())
+	// 	&& (ping->read_inches() <= PING_THRESHOLD_INCHES)
+	// ) {
+	// 	pixels->all_on();
 
-		if (actuator->is_extended()) {
-			soundboard->play_tune(tada);
-		}
-		else {
-			soundboard->play_tune(chirp);
-		}
-		open_box();
-	}
-	// Trigger CLOSE
-	else if (
-		actuator->is_retracted()
-		&& (millis() - close_timer_mark >= CLOSE_TIMER_MS)
-		&& (ping->read_inches() > PING_THRESHOLD_INCHES)
-	) {
-		pixels->all_on();
-		soundboard->play_tune(tada_reverse);
-		actuator->extend();
-		delay(500);
-	}
-	// All pixels on when in motion
-	else if (actuator->is_extending() || actuator->is_retracting()) {
-		pixels->all_on();
-	}
-	else {
-		pixels->update();
-		pixels->display();
-	}
+	// 	if (actuator->is_extended()) {
+	// 		soundboard->play_tune(tada);
+	// 	}
+	// 	else {
+	// 		soundboard->play_tune(chirp);
+	// 	}
+	// 	open_box();
+	// }
+	// // Trigger CLOSE
+	// else if (
+	// 	actuator->is_retracted()
+	// 	&& (millis() - close_timer_mark >= CLOSE_TIMER_MS)
+	// 	&& (ping->read_inches() > PING_THRESHOLD_INCHES)
+	// ) {
+	// 	pixels->all_on();
+	// 	soundboard->play_tune(tada_reverse);
+	// 	actuator->extend();
+	// 	delay(500);
+	// }
+	// // All pixels on when in motion
+	// else if (actuator->is_extending() || actuator->is_retracting()) {
+	// 	pixels->all_on();
+	// }
+	// else {
+	// 	pixels->update();
+	// 	pixels->display();
+	// }
 
-	display->clearDisplay();
-	display->setCursor(0, 0);
-	display->print("(-) ");
-	display->print(actuator->get_pot_neg());
-	display->print(" (+) ");
-	display->println(actuator->get_pot_pos());
-	display->print("(=) ");
-	display->println(actuator->get_pot_wiper());
-	if (actuator->is_extended()) {
-		display->println("EXTENDED");
-	}
-	else if (actuator->is_retracted()) {
-		display->println("RETRACTED");
-	}
-	else {
-		display->println("---");
-	}
+	// display->clearDisplay();
+	// display->setCursor(0, 0);
+	// display->print("(-) ");
+	// display->print(actuator->get_pot_neg());
+	// display->print(" (+) ");
+	// display->println(actuator->get_pot_pos());
+	// display->print("(=) ");
+	// display->println(actuator->get_pot_wiper());
+	// if (actuator->is_extended()) {
+	// 	display->println("EXTENDED");
+	// }
+	// else if (actuator->is_retracted()) {
+	// 	display->println("RETRACTED");
+	// }
+	// else {
+	// 	display->println("---");
+	// }
 
-	display->display();
-	delay(10);
+	// display->display();
+	// delay(10);
 }
 
 void open_box() {
@@ -155,6 +155,12 @@ void isr_decrease_delay() {
 
 
 /*
+
+pinMode(BUTTON_A, INPUT_PULLUP);
+attachInterrupt(BUTTON_A, isr_a, FALLING);
+pinMode(BUTTON_C, INPUT_PULLUP);
+attachInterrupt(BUTTON_C, isr_c, FALLING);
+
 uint16_t min_wiper_value = 0xFFF;
 uint16_t max_wiper_value = 0x000;
 
