@@ -92,7 +92,7 @@ public:
 		pinMode(limit_led_pin, OUTPUT);
 		digitalWrite(moving_led_pin, LOW);
 		digitalWrite(limit_led_pin, LOW);
-		update();
+		// update();
 		set_motor_state(STOP);
 		Serial << "Actuator ready" << endl;
 	}
@@ -104,8 +104,9 @@ public:
 			pos = adc.readADC(adc_pot_pos_channel);
 			neg = adc.readADC(adc_pot_neg_channel);
 			wiper = adc.readADC(adc_wiper_channel);
-
-			if (neg <= 1 && pos >= 1021 && wiper <= pos && wiper >= neg) break;
+			// print_pot();
+			if (wiper <= pos && wiper >= neg) break;
+			// if (neg <= 10 && pos >= 1021 && wiper <= pos && wiper >= neg) break;
 		}
 
 		pot.pos = pos;

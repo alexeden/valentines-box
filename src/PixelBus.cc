@@ -77,6 +77,10 @@ public:
 		strip->Show();
 	}
 
+	float get_velocity() {
+		return v;
+	}
+
 	void display(const RgbColor& color) {
 		pixels[(int)x] = color;
 

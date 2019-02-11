@@ -6,7 +6,6 @@
 #include "Actuator.cc"
 #include "Ping.cc"
 #include "PixelBus.cc"
-// #include "Pixels.cc"
 #include "Soundboard.cc"
 
 Actuator *actuator = new Actuator(
@@ -39,6 +38,7 @@ void isr_c() { }
 
 void setup() {
 	Serial.begin(115200);
+	Serial << "Begin setup()" << endl;
 	actuator->begin();
 	display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
 	ping->begin();
@@ -48,6 +48,7 @@ void setup() {
 	display->setTextSize(1);
 	display->setTextColor(WHITE);
 	soundboard->play_tune(chirp);
+	Serial << "Extending actuator" << endl;
 	while (!actuator->is_extended()) {
 		actuator->extend();
 	}
@@ -91,7 +92,8 @@ void loop() {
 	}
 	else {
 		pixels->update();
-		pixels->display(actuator->is_retracted() ? GOLD : PINK);
+		pixels->display(pixels->get_velocity() <= 0 ? GOLD : PINK);
+			// actuator->is_retracted() ? GOLD : PINK);
 	}
 
 	display->clearDisplay();
@@ -118,13 +120,13 @@ void loop() {
 
 void open_box() {
 	Serial << "Opening box" << endl;
-	long i = 0;
+	// long i = 0;
 	while (!actuator->is_retracted()) {
 		actuator->retract();
 
-		if (i++ % 100) {
-			actuator->print_pot();
-		}
+		// if (i++ % 100) {
+		// 	actuator->print_pot();
+		// }
 	}
 	Serial << "Box should be open, setting close timer mark" << endl;
 	close_timer_mark = millis();
