@@ -17,12 +17,8 @@ private:
 	uint32_t disp_mark;
 
 	void rotate() {
-		while (x <= 0) {
-			x += N;
-		}
-		while (x >= N) {
-			x -= N;
-		}
+		while (x <= 0) x += N;
+		while (x >= N) x -= N;
 	}
 
 	void reverse() {
@@ -56,6 +52,7 @@ public:
 		pixels = new uint32_t[N];
 		clear_pixels();
 		disp_mark = micros();
+		Serial << "Pixels ready" << endl;
 	}
 
 	void clear_pixels() {
@@ -64,27 +61,7 @@ public:
 		}
 	}
 
-	// void set_speed(u)
-
 	void update() {
-		// pull = p;
-		// if(pull < 0) {
-		// 	min_pull = min(min_pull, sqrt(pull));
-		// }
-		// else if(pull > 0) {
-		// 	max_pull = max(max_pull, sqrt(pull));
-		// }
-		// pull_force += p;
-		// // Degrade the pull force
-		// if(pull == 0) pull_force *= 0.1;
-		// float net = 0;
-		// float drag = abs(v);
-		// drag *= v > 0 ? -1 : 1;
-		// net += drag;
-		// net += pull_force;
-		// net /= MASS;
-		// a = net;
-		// v = 100;
 		x += v;
 		reverse();
 	}
@@ -107,7 +84,6 @@ public:
 			}
 		}
 		strip -> show();
-
 		disp_mark = micros();
 	}
 
