@@ -4,6 +4,9 @@
 #include <Streaming.h>
 #include <NeoPixelBus.h>
 
+static const RgbColor PINK(0xFF, 0x10, 0x19);
+static const RgbColor GOLD(255, 170, 10);
+
 class PixelBus {
 
 private:
@@ -67,16 +70,15 @@ public:
 		return (int)x;
 	}
 
-	void all_on() {
-		RgbColor bgr(0xFF, 0x10, 0x19);
+	void all_on(const RgbColor& color) {
 		for (int i = 0; i < N; i++) {
-			strip->SetPixelColor(i, bgr);
+			strip->SetPixelColor(i, color);
 		}
 		strip->Show();
 	}
 
-	void display() {
-		pixels[(int)x] = RgbColor(0xFF, 0x10, 0x19);
+	void display(const RgbColor& color) {
+		pixels[(int)x] = color;
 
 		for (int i = 0; i < N; i++) {
 			if (i == int(x)) {

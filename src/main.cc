@@ -23,7 +23,7 @@ Adafruit_SSD1306 *display = new Adafruit_SSD1306(128, 32, &Wire);
 
 Ping *ping = new Ping(PING_PIN, PING_THRESHOLD_INCHES);
 
-PixelBus *pixels = new PixelBus(NEOPIXEL_PIN, 20);
+PixelBus *pixels = new PixelBus(NEOPIXEL_PIN, 20, 0.8);
 
 Soundboard *soundboard = new Soundboard(SOUND_PIN, SOUND_CHANNEL, SOUND_RESOLUTION);
 
@@ -48,76 +48,72 @@ void setup() {
 	display->setTextSize(1);
 	display->setTextColor(WHITE);
 	soundboard->play_tune(chirp);
-	// while (!actuator->is_extended()) {
-	// 	actuator->extend();
-	// }
+	while (!actuator->is_extended()) {
+		actuator->extend();
+	}
 	soundboard->play_tune(chirp);
 	Serial << "End setup()" << endl;
 }
 
-long i = 0;
 
 void loop() {
-	// actuator->update();
-	ping->read_us();
-	pixels->update();
-	pixels->display();
-	delay(20);
+	actuator->update();
+
 	// Trigger OPEN
-	// if (
-	// 	(actuator->is_extended() || actuator->is_extending())
-	// 	&& (ping->read_inches() <= PING_THRESHOLD_INCHES)
-	// ) {
-	// 	pixels->all_on();
+	if (
+		(actuator->is_extended() || actuator->is_extending())
+		&& (ping->read_inches() <= PING_THRESHOLD_INCHES)
+	) {
+		pixels->all_on(GOLD);
 
-	// 	if (actuator->is_extended()) {
-	// 		soundboard->play_tune(tada);
-	// 	}
-	// 	else {
-	// 		soundboard->play_tune(chirp);
-	// 	}
-	// 	open_box();
-	// }
-	// // Trigger CLOSE
-	// else if (
-	// 	actuator->is_retracted()
-	// 	&& (millis() - close_timer_mark >= CLOSE_TIMER_MS)
-	// 	&& (ping->read_inches() > PING_THRESHOLD_INCHES)
-	// ) {
-	// 	pixels->all_on();
-	// 	soundboard->play_tune(tada_reverse);
-	// 	actuator->extend();
-	// 	delay(500);
-	// }
-	// // All pixels on when in motion
-	// else if (actuator->is_extending() || actuator->is_retracting()) {
-	// 	pixels->all_on();
-	// }
-	// else {
-	// 	pixels->update();
-	// 	pixels->display();
-	// }
+		if (actuator->is_extended()) {
+			soundboard->play_tune(tada);
+		}
+		else {
+			soundboard->play_tune(chirp);
+		}
+		open_box();
+	}
+	// Trigger CLOSE
+	else if (
+		actuator->is_retracted()
+		&& (millis() - close_timer_mark >= CLOSE_TIMER_MS)
+		&& (ping->read_inches() > PING_THRESHOLD_INCHES)
+	) {
+		pixels->all_on(PINK);
+		soundboard->play_tune(tada_reverse);
+		actuator->extend();
+		delay(500);
+	}
+	// All pixels on when in motion
+	else if (actuator->is_extending() || actuator->is_retracting()) {
+		pixels->all_on(actuator->is_extending() ? PINK : GOLD);
+	}
+	else {
+		pixels->update();
+		pixels->display(actuator->is_retracted() ? GOLD : PINK);
+	}
 
-	// display->clearDisplay();
-	// display->setCursor(0, 0);
-	// display->print("(-) ");
-	// display->print(actuator->get_pot_neg());
-	// display->print(" (+) ");
-	// display->println(actuator->get_pot_pos());
-	// display->print("(=) ");
-	// display->println(actuator->get_pot_wiper());
-	// if (actuator->is_extended()) {
-	// 	display->println("EXTENDED");
-	// }
-	// else if (actuator->is_retracted()) {
-	// 	display->println("RETRACTED");
-	// }
-	// else {
-	// 	display->println("---");
-	// }
+	display->clearDisplay();
+	display->setCursor(0, 0);
+	display->print("(-) ");
+	display->print(actuator->get_pot_neg());
+	display->print(" (+) ");
+	display->println(actuator->get_pot_pos());
+	display->print("(=) ");
+	display->println(actuator->get_pot_wiper());
+	if (actuator->is_extended()) {
+		display->println("EXTENDED");
+	}
+	else if (actuator->is_retracted()) {
+		display->println("RETRACTED");
+	}
+	else {
+		display->println("---");
+	}
 
-	// display->display();
-	// delay(10);
+	display->display();
+	delay(2);
 }
 
 void open_box() {
