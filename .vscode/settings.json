@@ -38,6 +38,8 @@
     "type_traits": "cpp",
     "tuple": "cpp",
     "typeinfo": "cpp",
-    "utility": "cpp"
+    "utility": "cpp",
+    "wiring_private.h": "c",
+    "pins_arduino.h": "c"
   }
 }
