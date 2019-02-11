@@ -55,29 +55,30 @@ void setup() {
 	// pinMode(BUTTON_C, INPUT_PULLUP);
 	// attachInterrupt(BUTTON_C, isr_c, FALLING);
 
-	actuator->begin();
-	// pixels->begin();
 	soundboard->begin();
 	display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
+	pixels->begin();
+	actuator->begin();
 	display->clearDisplay();
 	display->setTextSize(1);
 	display->setTextColor(WHITE);
+	soundboard->play_tune(chirp);
 	while (!actuator->is_extended()) {
 		actuator->extend();
 	}
+	soundboard->play_tune(chirp);
+	Serial << "End setup()" << endl;
 }
 
-// int i = 0;
+long i = 0;
 
 void loop() {
 	actuator->update();
 
-	// long inches = ping->read_inches();
-
 	// Trigger OPEN
 	if (
 		(actuator->is_extended() || actuator->is_extending())
-		&& (ping->read_inches() <= PING_THRESHOLD_INCHES)
+		&& false // (ping->read_inches() <= PING_THRESHOLD_INCHES)
 	) {
 		Serial << "TRIGGERING OPEN" << endl;
 
@@ -95,12 +96,16 @@ void loop() {
 	else if (
 		actuator->is_retracted()
 		&& (millis() - close_timer_mark >= CLOSE_TIMER_MS)
-		&& (ping->read_inches() > PING_THRESHOLD_INCHES)
+		&& false // (ping->read_inches() > PING_THRESHOLD_INCHES)
 	) {
 		Serial << "TRIGGERING CLOSE" << endl;
 		soundboard->play_tune(tada_reverse);
 		actuator->extend();
 		delay(1000);
+	}
+	else {
+		pixels->update();
+		pixels->display();
 	}
 
 	display->clearDisplay();
@@ -111,8 +116,6 @@ void loop() {
 	display->println(actuator->get_pot_pos());
 	display->print("(=) ");
 	display->println(actuator->get_pot_wiper());
-
-
 	if (actuator->is_extended()) {
 		display->println("EXTENDED");
 	}
@@ -122,14 +125,15 @@ void loop() {
 	else {
 		display->println("---");
 	}
-	display->print("Ping: ");
-	display->println(ping->read_inches());
+	// display->print("Ping: ");
+	// display->println(ping->read_inches());
 	display->display();
 
-	delay(5);
-
+	// // Serial << "End loop " << ++i << endl;
 	// pixels->update();
 	// pixels->display();
+	delay(10);
+
 }
 
 void open_box() {
