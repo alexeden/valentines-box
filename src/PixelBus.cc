@@ -7,12 +7,12 @@
 class PixelBus {
 
 private:
-	const float DEGRADE = 0.8;
     const uint8_t PIN, N;
+	const float DECAY;
 	NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> *strip;
 	float x;
 	float v;
-	uint32_t *pixels;
+	RgbColor *pixels;
 	uint32_t disp_mark;
 
 	void rotate() {
@@ -20,19 +20,21 @@ private:
 		while (x >= N) x -= N;
 	}
 
-	void degrade(uint32_t &pixel) {
-		pixel = (
-			0x00 << 24 |
-			uint32_t(float(pixel >> 16 & 0xFF) * DEGRADE) << 16 |
-			uint32_t(float(pixel >> 8 & 0xFF) * DEGRADE) << 8 |
-			uint32_t(float(pixel & 0xFF) * DEGRADE)
-		);
+	void apply_decay(RgbColor &color) {
+		color.R = uint8_t(float(color.R) * DECAY);
+		color.G = uint8_t(float(color.G) * DECAY);
+		color.B = uint8_t(float(color.B) * DECAY);
 	}
 
 public:
-    PixelBus (uint8_t _pin, uint8_t _n)
+    PixelBus (
+		uint8_t _pin,
+		uint8_t _n,
+		float _decay
+	)
 	: 	PIN(_pin),
 		N(_n),
+		DECAY(_decay),
 		strip(new NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod>(_n, _pin)),
 		x(0.0),
 		v(0.4)
@@ -42,7 +44,7 @@ public:
 		pinMode(PIN, OUTPUT);
 		strip->Begin();
 		strip->Show();
-		pixels = new uint32_t[N];
+		pixels = new RgbColor[N];
 		clear_pixels();
 		disp_mark = micros();
 		Serial << "PixelBus ready" << endl;
@@ -50,7 +52,7 @@ public:
 
 	void clear_pixels() {
 		for (int i = 0; i < N; i++) {
-			pixels[i] = 0x00000000;
+			pixels[i] = RgbColor(0, 0, 0);
 		}
 	}
 
@@ -66,7 +68,7 @@ public:
 	}
 
 	void all_on() {
-		uint32_t bgr = 0x00ff1019;
+		RgbColor bgr(0xFF, 0x10, 0x19);
 		for (int i = 0; i < N; i++) {
 			strip->SetPixelColor(i, bgr);
 		}
@@ -74,19 +76,15 @@ public:
 	}
 
 	void display() {
-		uint32_t bgr = 0x00ff1019;
+		pixels[(int)x] = RgbColor(0xFF, 0x10, 0x19);
 
-
-		pixels[(int)x] = bgr;
 		for (int i = 0; i < N; i++) {
 			if (i == int(x)) {
-				RgbColor c(pixels[i] >> 16 & 0xFF, pixels[i] >> 8 & 0xFF, pixels[i] & 0xFF);
-				strip->SetPixelColor(i, c);
+				strip->SetPixelColor(i, pixels[i]);
 			}
 			else {
-				degrade(pixels[i]);
-				RgbColor c(pixels[i] >> 16 & 0xFF, pixels[i] >> 8 & 0xFF, pixels[i] & 0xFF);
-				strip->SetPixelColor(i, c);
+				apply_decay(pixels[i]);
+				strip->SetPixelColor(i, pixels[i]);
 			}
 		}
 		strip->Show();
