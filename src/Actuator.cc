@@ -92,7 +92,7 @@ public:
 		pinMode(limit_led_pin, OUTPUT);
 		digitalWrite(moving_led_pin, LOW);
 		digitalWrite(limit_led_pin, LOW);
-		// update();
+		update();
 		set_motor_state(STOP);
 		Serial << "Actuator ready" << endl;
 	}

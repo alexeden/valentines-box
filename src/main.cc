@@ -49,6 +49,7 @@ void setup() {
 	display->setTextColor(WHITE);
 	soundboard->play_tune(chirp);
 	Serial << "Extending actuator" << endl;
+	actuator->print_pot();
 	while (!actuator->is_extended()) {
 		actuator->extend();
 	}
@@ -132,11 +133,13 @@ void open_box() {
 	close_timer_mark = millis();
 }
 
-void display_line(String str) {
+template <class T>
+T display_line(T value) {
 	display->clearDisplay();
 	display->setCursor(0, 0);
-	display->println(str);
+	display->println(value);
 	display->display();
+	return value;
 }
 
 void isr_increase_delay() {
